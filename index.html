@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RESIDENT EVIL REQUIEM — Реквием по мёртвым. Кошмар для живых.</title>
+<meta name="description" content="Фанатский промо-сайт Resident Evil Requiem: досье, герои, локации, угрозы, инвентарь выживания, трейлеры и системные требования. Раккун-Сити ждёт.">
+<!-- Шрифты Google: Cinzel (заголовки), Special Elite (печатная машинка), Inter + IBM Plex Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Special+Elite&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Tailwind CSS (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<!-- GSAP + ScrollTrigger (CDN) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+/* ============================================================
+   RESIDENT EVIL REQUIEM — FAN PROMO CONCEPT
+   Палитра: #050505 / уголь / #7a0c0c / #d10f1f / #3fae5a / #e8e6df
+   ============================================================ */
+:root{
+  --bg:#050505; --coal:#0d0e0f; --ink:#e8e6df; --ink-dim:#9b988e;
+  --blood:#d10f1f; --blood-dark:#7a0c0c; --herb:#3fae5a; --herb-dim:#2c7a43;
+  --paper:#cfc9b4; --steel:#17181a;
+}
+html{ scroll-behavior:smooth; scroll-padding-top:84px; }
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'Inter',sans-serif; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body.locked{ overflow:hidden; }
+::selection{ background:var(--blood); color:#fff; }
+.font-display{ font-family:'Cinzel',serif; }
+.font-type{ font-family:'Special Elite','Courier New',monospace; }
+.font-mono{ font-family:'IBM Plex Mono',monospace; }
+.text-blood{ color:var(--blood); } .text-herb{ color:var(--herb); }
+
+/* Тонкий красный скроллбар */
+::-webkit-scrollbar{ width:9px; }
+::-webkit-scrollbar-track{ background:#070707; }
+::-webkit-scrollbar-thumb{ background:#3a0a0a; border:1px solid #111; }
+::-webkit-scrollbar-thumb:hover{ background:var(--blood-dark); }
+
+/* ============ ГЛОБАЛЬНЫЕ ЭФФЕКТ-СЛОИ ============ */
+.fx{ position:fixed; inset:0; pointer-events:none; }
+#fx-vignette{ z-index:90;
+  background:
+    radial-gradient(ellipse at 50% 42%, transparent 46%, rgba(0,0,0,.42) 82%, rgba(0,0,0,.78) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.25), transparent 18%, transparent 82%, rgba(0,0,0,.4));
+}
+#fx-scan{ z-index:95; opacity:.5; mix-blend-mode:overlay;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, transparent 1px 3px);
+}
+#fx-grain{ z-index:96; opacity:.09; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grainShift .7s steps(4) infinite;
+}
+@keyframes grainShift{
+  0%{ transform:translate(0,0); } 25%{ transform:translate(-3%,2%); }
+  50%{ transform:translate(2%,-3%); } 75%{ transform:translate(-2%,-2%); } 100%{ transform:translate(3%,2%); }
+}
+/* Луч фонарика — освещает область вокруг курсора */
+#fx-flash{ z-index:93; opacity:1;
+  background:radial-gradient(300px circle at var(--mx,50vw) var(--my,42vh),
+    rgba(255,244,214,.05) 0px, transparent 70px,
+    rgba(1,3,2,.34) 240px, rgba(1,3,2,.66) 560px);
+  transition:background .18s ease-out;
+}
+body.modal-open #fx-flash, body.modal-open #fx-vignette{ opacity:.35; }
+/* Кратковременное полное затемнение («мигающий свет») */
+#fx-blackout{ z-index:91; background:#000; opacity:0; }
+/* Капли на «стекле» экрана */
+#fx-drops{ z-index:92; opacity:.9; }
+.glass-drop{ position:absolute; top:-12%; width:3px; border-radius:3px;
+  background:linear-gradient(180deg, transparent, rgba(190,200,205,.35) 30%, rgba(190,200,205,.08));
+  filter:blur(.6px); opacity:.14; animation:dropSlide linear infinite;
+}
+@keyframes dropSlide{ 0%{ top:-14%; } 78%{ opacity:.14; } 100%{ top:112%; opacity:0; } }
+/* Вспышка помех при «шёпоте» */
+#fx-whisper{ z-index:97; opacity:0;
+  background:
+    repeating-linear-gradient(0deg, rgba(209,15,31,.06) 0 2px, transparent 2px 5px),
+    linear-gradient(90deg, rgba(63,174,90,.05), transparent 30%, transparent 70%, rgba(209,15,31,.07));
+}
+.whisper-text{ position:fixed; z-index:98; pointer-events:none; font-family:'Special Elite',monospace;
+  color:rgba(214,52,60,.85); font-size:15px; letter-spacing:.12em; opacity:0;
+  text-shadow:0 0 12px rgba(209,15,31,.6); transform:translate(-50%,-50%);
+}
+/* Тряска экрана (шёпот) */
+@keyframes shakeX{ 0%{transform:translate(0,0)} 20%{transform:translate(-6px,3px)} 40%{transform:translate(5px,-3px)} 60%{transform:translate(-4px,-2px)} 80%{transform:translate(4px,2px)} 100%{transform:translate(0,0)} }
+body.shake #app{ animation:shakeX .22s linear; }
+
+/* ============ КАСТОМНЫЙ КУРСОР ============ */
+body.cursor-on, body.cursor-on *{ cursor:none !important; }
+#cursor-ring{ position:fixed; z-index:999; width:34px; height:34px; border:1px solid rgba(209,15,31,.75);
+  border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); transition:width .18s,height .18s,border-color .18s;
+  box-shadow:0 0 14px rgba(209,15,31,.25), inset 0 0 8px rgba(209,15,31,.15);
+}
+#cursor-dot{ position:fixed; z-index:999; width:4px; height:4px; background:var(--blood); border-radius:50%;
+  pointer-events:none; transform:translate(-50%,-50%); box-shadow:0 0 8px rgba(209,15,31,.9);
+}
+#cursor-ring.hovering{ width:52px; height:52px; border-color:rgba(63,174,90,.9); }
+@media (hover:none), (pointer:coarse){ #cursor-ring,#cursor-dot{ display:none; } }
+
+/* ============ ECG / ПОЛОСКА ЗДОРОВЬЯ ============ */
+#ecg-bar{ position:fixed; top:0; left:0; right:0; height:4px; z-index:120; background:rgba(255,255,255,.06); }
+#ecg-fill{ height:100%; transform-origin:left; transform:scaleX(0);
+  background:linear-gradient(90deg, var(--blood-dark), var(--blood) 60%, #ff4d58);
+  box-shadow:0 0 12px rgba(209,15,31,.7);
+}
+.ecg-line{ stroke:var(--herb); stroke-width:1.6; fill:none;
+  stroke-dasharray:46 140; animation:ecgrun 1.5s linear infinite; filter:drop-shadow(0 0 4px rgba(63,174,90,.7));
+}
+@keyframes ecgrun{ to{ stroke-dashoffset:-186; } }
+
+/* ============ ПРЕЛОУДЕР ============ */
+#preloader{ position:fixed; inset:0; z-index:1000; background:#030303;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; }
+#preloader::after{ content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 4px); }
+.pre-flicker{ animation:preFlk 1.1s steps(2) infinite; }
+@keyframes preFlk{ 0%,62%{opacity:1} 63%,70%{opacity:.25} 71%,100%{opacity:1} }
+.pre-glitch-out{ animation:preGlitch .5s steps(6) forwards; }
+@keyframes preGlitch{
+  0%{ clip-path:inset(0 0 0 0); filter:none; } 20%{ clip-path:inset(12% 0 64% 0); filter:hue-rotate(40deg) contrast(1.6); }
+  40%{ clip-path:inset(52% 0 12% 0); filter:hue-rotate(-60deg); transform:translateX(-8px); }
+  60%{ clip-path:inset(8% 0 78% 0); transform:translateX(6px); } 100%{ opacity:0; clip-path:inset(45% 0 45% 0); }
+}
+
+/* ============ КНОПКИ ============ */
+.btn-blood{ position:relative; display:inline-flex; align-items:center; gap:.7rem; overflow:hidden;
+  font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.22em; font-size:12px; font-weight:600;
+  color:#f5eaea; padding:1rem 2rem; border:1px solid rgba(209,15,31,.55);
+  background:linear-gradient(135deg, #7a0c0c 0%, #4a0606 55%, #360404 100%);
+  box-shadow:0 0 24px rgba(209,15,31,.22), inset 0 1px 0 rgba(255,255,255,.08);
+  transition:box-shadow .3s, transform .15s, border-color .3s; animation:btnPulse 2.8s ease-in-out infinite;
+}
+@keyframes btnPulse{ 0%,100%{ box-shadow:0 0 18px rgba(209,15,31,.18);} 50%{ box-shadow:0 0 34px rgba(209,15,31,.42);} }
+.btn-blood::before{ content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.22), transparent); transform:skewX(-18deg); transition:left .5s; }
+.btn-blood::after{ content:''; position:absolute; inset:0; opacity:0; transition:opacity .25s;
+  background:repeating-linear-gradient(115deg, transparent 0 14px, rgba(0,0,0,.35) 14px 15px); }
+.btn-blood:hover{ box-shadow:0 0 46px rgba(209,15,31,.6); border-color:var(--blood); transform:translateY(-1px); animation:none; }
+.btn-blood:hover::before{ left:120%; } .btn-blood:hover::after{ opacity:1; }
+.btn-blood:active{ transform:translateY(1px) scale(.99); }
+.btn-ghost{ display:inline-flex; align-items:center; gap:.7rem; font-family:'IBM Plex Mono',monospace;
+  text-transform:uppercase; letter-spacing:.22em; font-size:12px; color:var(--ink);
+  padding:1rem 2rem; border:1px solid rgba(232,230,223,.25); background:rgba(255,255,255,.02);
+  transition:border-color .3s, color .3s, box-shadow .3s, background .3s;
+}
+.btn-ghost:hover{ border-color:rgba(209,15,31,.8); color:#fff; background:rgba(122,12,12,.15); box-shadow:0 0 26px rgba(209,15,31,.25); }
+
+/* ============ МЕТАЛЛИЧЕСКИЕ ТАБЛИЧКИ / КЛЁПКИ ============ */
+.plate{ position:relative; background:linear-gradient(150deg,#191b1d 0%,#0c0d0e 55%,#141618 100%);
+  border:1px solid #26292c; box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 -14px 30px rgba(0,0,0,.55);
+}
+.plate::before{ content:''; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background:
+    radial-gradient(circle 3px at 10px 10px, #3c4044 40%, #101112 70%, transparent 71%),
+    radial-gradient(circle 3px at calc(100% - 10px) 10px, #3c4044 40%, #101112 70%, transparent 71%),
+    radial-gradient(circle 3px at 10px calc(100% - 10px), #3c4044 40%, #101112 70%, transparent 71%),
+    radial-gradient(circle 3px at calc(100% - 10px) calc(100% - 10px), #3c4044 40%, #101112 70%, transparent 71%);
+}
+.scratched{ position:relative; }
+.scratched::after{ content:''; position:absolute; inset:0; pointer-events:none !important; opacity:.28; mix-blend-mode:overlay; z-index:1; }
+  background:repeating-linear-gradient(127deg, transparent 0 26px, rgba(255,255,255,.06) 26px 27px, transparent 27px 61px);
+}
+
+/* ============ ПЕЧАТЬ / ШТАМП CONFIDENTIAL ============ */
+.stamp{ position:absolute; font-family:'IBM Plex Mono',monospace; font-weight:600;
+  color:rgba(209,15,31,.85); border:2px solid rgba(209,15,31,.8); padding:.25rem .8rem;
+  font-size:10px; letter-spacing:.3em; text-transform:uppercase; transform:rotate(-11deg);
+  background:rgba(20,0,0,.25); box-shadow:inset 0 0 0 1px rgba(209,15,31,.25);
+  text-shadow:0 0 6px rgba(209,15,31,.4); pointer-events:none; white-space:nowrap;
+}
+
+/* ============ ЗАГОЛОВКИ СЕКЦИЙ ============ */
+.sec-kicker{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.4em;
+  color:var(--herb); text-transform:uppercase; display:flex; align-items:center; gap:.8rem; }
+.sec-kicker::before{ content:''; width:34px; height:1px; background:var(--herb-dim); }
+.sec-title{ position:relative; display:inline-block; font-family:'Cinzel',serif; font-weight:900;
+  font-size:clamp(2rem,5.4vw,3.6rem); letter-spacing:.06em; text-transform:uppercase; line-height:1.05;
+  text-shadow:0 2px 30px rgba(0,0,0,.8); transition:text-shadow .1s;
+}
+.sec-title.aberr:hover{ animation:aberrJit .28s steps(3) infinite; text-shadow:-3px 0 rgba(209,15,31,.75), 3px 0 rgba(63,174,90,.55); }
+@keyframes aberrJit{ 0%{transform:translate(0,0) skewX(0)} 33%{transform:translate(-1px,1px) skewX(-1deg)} 66%{transform:translate(1px,-1px) skewX(1deg)} 100%{transform:translate(0,0)} }
+.blood-svg{ position:absolute; top:-6px; left:-4px; width:calc(100% + 8px); height:70px; overflow:visible; pointer-events:none; }
+.glitch-in{ animation:glitchIn .55s steps(5) both; }
+@keyframes glitchIn{
+  0%{ opacity:0; clip-path:inset(40% 0 40% 0); transform:translateX(-16px); filter:hue-rotate(60deg) contrast(2); }
+  40%{ opacity:1; clip-path:inset(8% 0 62% 0); transform:translateX(10px); }
+  70%{ clip-path:inset(60% 0 6% 0); transform:translateX(-6px); }
+  100%{ opacity:1; clip-path:inset(0 0 0 0); transform:none; filter:none; }
+}
+
+/* ============ ГЛИТЧ-ФОТО В ДЕЛЕ ГЕРОЯ ============ */
+.fig{ position:relative; overflow:hidden; }
+.fig img.main{ display:block; width:100%; height:100%; object-fit:cover; position:relative; z-index:1;
+  filter:grayscale(38%) sepia(14%) contrast(1.05) brightness(.92); transition:filter .5s; }
+.fig .g-layer{ position:absolute; inset:0; background-size:cover; background-position:center top; opacity:0; z-index:2; pointer-events:none; mix-blend-mode:screen; }
+.fig:hover img.main{ filter:grayscale(0%) sepia(0%) contrast(1.06) brightness(1); animation:figJit .35s steps(2) infinite; }
+.fig:hover .g-r{ opacity:.5; filter:sepia(1) hue-rotate(-48deg) saturate(4); animation:gR .8s steps(3) infinite; }
+.fig:hover .g-b{ opacity:.5; filter:sepia(1) hue-rotate(140deg) saturate(3.4); animation:gB .9s steps(3) infinite; }
+@keyframes gR{ 0%{ transform:translate(-5px,0); clip-path:inset(12% 0 58% 0);} 50%{ transform:translate(4px,2px); clip-path:inset(52% 0 18% 0);} 100%{ transform:translate(-3px,-1px); clip-path:inset(30% 0 40% 0);} }
+@keyframes gB{ 0%{ transform:translate(5px,1px); clip-path:inset(48% 0 20% 0);} 50%{ transform:translate(-4px,-2px); clip-path:inset(8% 0 66% 0);} 100%{ transform:translate(3px,0); clip-path:inset(64% 0 8% 0);} }
+@keyframes figJit{ 0%,100%{ transform:translate(0,0);} 50%{ transform:translate(.6px,-.6px);} }
+/* Скан-полоса на фото дела */
+.fig::after{ content:''; position:absolute; left:0; right:0; top:-12%; height:10%; z-index:3; opacity:0;
+  background:linear-gradient(180deg, transparent, rgba(63,174,90,.25), transparent); }
+.fig:hover::after{ opacity:1; animation:figScan 1.3s linear infinite; }
+@keyframes figScan{ 0%{ top:-12%; } 100%{ top:112%; } }
+
+/* Бумажная текстура досье */
+.paper-bg{ background:
+  radial-gradient(ellipse at 20% 10%, rgba(255,250,230,.05), transparent 50%),
+  radial-gradient(ellipse at 85% 90%, rgba(255,250,230,.04), transparent 45%),
+  linear-gradient(160deg,#141311 0%,#0f0e0c 60%,#121110 100%);
+}
+.file-row{ display:flex; justify-content:space-between; gap:1rem; padding:.4rem 0; border-bottom:1px dotted rgba(232,230,223,.14);
+  font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
+.file-row b{ color:var(--ink-dim); font-weight:500; }
+.redacted{ background:#000; color:transparent; text-shadow:none; user-select:none; padding:0 .5rem; box-shadow:inset 0 0 0 1px #1a1a1a; }
+
+/* ============ ЛОКАЦИИ ============ */
+.loc-tab{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  padding:.8rem 1.1rem; border:1px solid rgba(255,255,255,.1); color:var(--ink-dim); background:rgba(255,255,255,.02);
+  transition:all .3s; white-space:nowrap; }
+.loc-tab:hover{ color:var(--ink); border-color:rgba(209,15,31,.4); }
+.loc-tab.active{ color:#fff; border-color:var(--blood); background:rgba(122,12,12,.22); box-shadow:0 0 22px rgba(209,15,31,.25); }
+.loc-media{ position:relative; }
+.loc-media img{ transition:filter .8s, opacity .3s; }
+#loc-panel{ --tint:rgba(63,174,90,.14); }
+.loc-tint{ position:absolute; inset:0; pointer-events:none; background:
+  radial-gradient(ellipse at 50% 60%, var(--tint), transparent 70%),
+  linear-gradient(180deg, rgba(5,5,5,.5), transparent 30%, transparent 60%, rgba(5,5,5,.92)); mix-blend-mode:screen; }
+.loc-shade{ position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(180deg, rgba(5,5,5,.55), transparent 26%, transparent 58%, rgba(5,5,5,.94)); }
+
+/* ============ УГРОЗЫ ============ */
+.threat{ transform-style:preserve-3d; will-change:transform; }
+.threat .thr-img{ filter:grayscale(55%) contrast(1.1) brightness(.85); transition:filter .5s; }
+.threat:hover .thr-img{ filter:grayscale(10%) contrast(1.12) brightness(1); }
+.threat .scanline{ position:absolute; left:0; right:0; top:-8%; height:6px; z-index:5; opacity:0;
+  background:linear-gradient(90deg, transparent, rgba(63,174,90,.9), transparent);
+  box-shadow:0 0 18px rgba(63,174,90,.8); }
+.threat:hover .scanline{ opacity:1; animation:scanY 1.5s ease-in-out infinite; }
+@keyframes scanY{ 0%{ top:-3%; } 50%{ top:101%; } 100%{ top:-3%; } }
+.threat .thr-flicker{ position:absolute; inset:0; z-index:4; opacity:0; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 30%, rgba(232,230,223,.16), transparent 55%); }
+.threat:hover .thr-flicker{ opacity:1; animation:thrFlk 1.1s steps(3) infinite; }
+@keyframes thrFlk{ 0%,55%,100%{ opacity:.12; } 12%,20%{ opacity:.55; } 30%{ opacity:.05; } 70%{ opacity:.3; } }
+.seg{ width:16px; height:8px; background:#222; border:1px solid #000; transform:skewX(-14deg); }
+.seg.on{ background:var(--blood); box-shadow:0 0 8px rgba(209,15,31,.7); }
+.seg.on.g{ background:var(--herb); box-shadow:0 0 8px rgba(63,174,90,.7); }
+.hazard-stripe{ height:8px; background:repeating-linear-gradient(45deg, #4a0606 0 12px, #0a0a0a 12px 24px); }
+
+/* ============ ИНВЕНТАРЬ ============ */
+.inv-slot{ position:relative; aspect-ratio:1/1; background:linear-gradient(160deg,#0b0c0d,#101112);
+  border:1px solid #242629; box-shadow:inset 0 2px 10px rgba(0,0,0,.8); transition:border-color .2s, box-shadow .2s; }
+.inv-slot:hover{ border-color:rgba(63,174,90,.5); }
+.inv-slot.target{ border-color:var(--herb); box-shadow:inset 0 0 18px rgba(63,174,90,.25); }
+.inv-item{ position:absolute; inset:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  background:radial-gradient(ellipse at 50% 35%, rgba(255,255,255,.05), transparent 70%); touch-action:none; cursor:grab; }
+.inv-item:active{ cursor:grabbing; }
+.inv-item .nm{ font-family:'IBM Plex Mono',monospace; font-size:8px; letter-spacing:.04em; color:var(--ink-dim);
+  text-transform:uppercase; text-align:center; line-height:1.2; }
+.inv-item.selected{ outline:1px dashed rgba(209,15,31,.9); outline-offset:-1px; box-shadow:inset 0 0 16px rgba(209,15,31,.25); }
+#inv-ghost{ position:fixed; z-index:98; width:72px; height:72px; pointer-events:none; display:flex; align-items:center; justify-content:center;
+  background:rgba(10,10,10,.8); border:1px solid rgba(209,15,31,.6); transform:translate(-50%,-50%) rotate(4deg) scale(1.08);
+  box-shadow:0 14px 40px rgba(0,0,0,.7);
+}
+#inv-log{ font-family:'IBM Plex Mono',monospace; font-size:11px; }
+#inv-log div{ opacity:.85; } #inv-log div:first-child{ color:#cde3c9; }
+
+/* ============ ПИШУЩАЯ МАШИНКА ============ */
+.tw-key{ width:100%; aspect-ratio:1/1; border-radius:3px; background:linear-gradient(180deg,#2b2d30,#1a1b1d);
+  border-bottom:2px solid #0a0b0c; transition:transform .08s, filter .08s; }
+.tw-key.pressed{ transform:translateY(2px); filter:brightness(1.7); }
+.tw-paper{ background:linear-gradient(180deg,#ddd8c6,#cfc9b2); color:#17150f;
+  box-shadow:0 6px 24px rgba(0,0,0,.65), inset 0 0 40px rgba(120,110,80,.25); }
+.tw-caret{ display:inline-block; width:9px; height:15px; background:#17150f; vertical-align:-2px; animation:blink .9s steps(1) infinite; }
+@keyframes blink{ 50%{ opacity:0; } }
+/* Эквалайзер */
+.eq{ display:flex; align-items:flex-end; gap:4px; height:72px; }
+.eq span{ width:7px; height:100%; background:linear-gradient(180deg,var(--blood) 0%,var(--blood-dark) 70%,#2a0505 100%);
+  transform:scaleY(.12); transform-origin:bottom; border-radius:1px 1px 0 0; opacity:.9; }
+.eq.playing span{ animation:eqB 1s ease-in-out infinite alternate; animation-duration:var(--d); animation-delay:var(--dl); }
+@keyframes eqB{ 0%{ transform:scaleY(.12); } 100%{ transform:scaleY(.95); } }
+
+/* ============ CRT-МОНИТОР ============ */
+.crt{ position:relative; border-radius:18px; padding:18px 18px 46px;
+  background:linear-gradient(160deg,#3a3d40 0%,#232527 40%,#17181a 100%);
+  box-shadow:0 30px 80px rgba(0,0,0,.8), inset 0 2px 0 rgba(255,255,255,.12), inset 0 -6px 14px rgba(0,0,0,.6);
+  border:1px solid #45484c;
+}
+.crt-screw{ position:absolute; width:8px; height:8px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#7a7e83,#2c2e31 70%); box-shadow:inset 0 1px 1px rgba(0,0,0,.8); }
+.crt-screen{ position:relative; border-radius:10px; overflow:hidden; background:#000; border:2px solid #0a0a0a;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.9), inset 0 0 8px rgba(0,0,0,1); }
+.crt-screen::after{ content:''; position:absolute; inset:0; pointer-events:none; z-index:6;
+  background:radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%); }
+.crt-scan{ position:absolute; inset:0; z-index:5; pointer-events:none; opacity:.5;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 2px, transparent 2px 4px); animation:crtScan 8s linear infinite; }
+@keyframes crtScan{ 0%{ background-position:0 0; } 100%{ background-position:0 120px; } }
+.crt-glow{ position:absolute; inset:0; z-index:4; pointer-events:none; opacity:.16; mix-blend-mode:screen;
+  background:radial-gradient(ellipse at 50% 40%, rgba(120,220,150,.5), transparent 60%); animation:crtGlow 5s ease-in-out infinite; }
+@keyframes crtGlow{ 0%,100%{ opacity:.1; } 50%{ opacity:.22; } }
+.crt-panel{ position:absolute; left:18px; right:18px; bottom:10px; height:28px; display:flex; align-items:center; justify-content:space-between; }
+.crt-knob{ width:16px; height:16px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #5a5e63, #26282b 75%); border:1px solid #0c0d0e; box-shadow:0 1px 2px rgba(0,0,0,.6); }
+.rec-dot{ width:9px; height:9px; border-radius:50%; background:var(--blood); box-shadow:0 0 10px rgba(209,15,31,.9); animation:blink 1.1s steps(1) infinite; }
+.crt-play{ position:absolute; inset:0; z-index:8; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.35); transition:background .3s; }
+.crt-play:hover{ background:rgba(0,0,0,.15); }
+.crt-play .pb{ width:84px; height:84px; border-radius:50%; border:2px solid rgba(209,15,31,.8); display:flex; align-items:center; justify-content:center;
+  background:rgba(10,0,0,.55); box-shadow:0 0 40px rgba(209,15,31,.45); animation:btnPulse 2.4s infinite; transition:transform .2s; }
+.crt-play:hover .pb{ transform:scale(1.08); }
+
+/* ============ БЕГУЩАЯ СТРОКА ============ */
+.ticker-wrap{ overflow:hidden; border-top:1px solid rgba(209,15,31,.25); border-bottom:1px solid rgba(209,15,31,.25); background:#080808; }
+.ticker{ display:flex; width:max-content; animation:ticker 42s linear infinite; }
+.ticker:hover{ animation-play-state:paused; }
+@keyframes ticker{ to{ transform:translateX(-50%); } }
+
+/* ============ ГЕРОЙ ============ */
+#hero-title{ font-size:clamp(3rem,12vw,9.5rem); line-height:.95; }
+#hero-title .ltr{ display:inline-block; }
+.h-title-glitch{ position:relative; }
+.h-title-glitch::before,.h-title-glitch::after{ content:attr(data-text); position:absolute; inset:0; opacity:0; pointer-events:none; }
+.h-title-glitch::before{ color:var(--blood); z-index:-1; animation:hglR 4.2s steps(2) infinite; }
+.h-title-glitch::after{ color:#2f8fd4; z-index:-2; animation:hglB 3.7s steps(2) infinite; }
+@keyframes hglR{ 0%,92%,100%{ opacity:0; transform:none; clip-path:inset(0 0 0 0);} 93%{ opacity:.85; transform:translate(-5px,2px); clip-path:inset(20% 0 40% 0);} 96%{ opacity:.7; transform:translate(4px,-1px); clip-path:inset(60% 0 10% 0);} }
+@keyframes hglB{ 0%,88%,100%{ opacity:0;} 90%{ opacity:.8; transform:translate(5px,-2px); clip-path:inset(50% 0 20% 0);} 94%{ opacity:.6; transform:translate(-4px,1px); clip-path:inset(10% 0 70% 0);} }
+.lamp{ position:absolute; width:420px; height:420px; border-radius:50%; pointer-events:none; mix-blend-mode:screen;
+  background:radial-gradient(circle, rgba(255,238,190,.34) 0%, rgba(255,220,150,.1) 32%, transparent 62%);
+  animation:lampFlk 5.5s steps(12) infinite;
+}
+@keyframes lampFlk{ 0%,60%,100%{ opacity:.75; } 8%{ opacity:.15; } 10%{ opacity:.8; } 30%{ opacity:.25; } 32%{ opacity:.7; } 64%{ opacity:.05; } 66%{ opacity:.6; } }
+.shadowpass{ position:absolute; top:-20%; width:220px; height:140%; background:#000; opacity:.55; filter:blur(26px);
+  transform:rotate(9deg); animation:shadowWalk 34s linear infinite; }
+@keyframes shadowWalk{ 0%{ left:-16%; } 52%{ left:108%; } 100%{ left:108%; } }
+
+/* ============ ГАЛЕРЕЯ / ЛАЙТБОКС ============ */
+.g-item{ position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.08); break-inside:avoid; }
+.g-item img{ transition:transform .6s cubic-bezier(.2,.7,.2,1), filter .4s; filter:grayscale(35%) brightness(.85); display:block; width:100%; }
+.g-item:hover img{ transform:scale(1.06); filter:grayscale(0%) brightness(1); }
+.g-item .g-cap{ position:absolute; inset:auto 0 0 0; padding:.6rem .8rem; background:linear-gradient(0deg, rgba(0,0,0,.9), transparent);
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.14em; color:var(--ink-dim); text-transform:uppercase; }
+.g-item::after{ content:''; position:absolute; inset:0; border:1px solid transparent; transition:border-color .3s; pointer-events:none; }
+.g-item:hover::after{ border-color:rgba(209,15,31,.7); }
+#lightbox{ position:fixed; inset:0; z-index:200; background:rgba(2,2,2,.94); display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+#lightbox.open{ display:flex; }
+.lb-btn{ position:absolute; top:50%; transform:translateY(-50%); z-index:5; width:52px; height:52px; display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(255,255,255,.2); color:#fff; background:rgba(0,0,0,.5); transition:.25s; }
+.lb-btn:hover{ border-color:var(--blood); box-shadow:0 0 18px rgba(209,15,31,.4); }
+
+/* ============ МОДАЛЬНОЕ ОКНО ТРЕЙЛЕРА ============ */
+#trailer-modal{ position:fixed; inset:0; z-index:200; background:rgba(1,1,1,.93); display:none; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(6px); }
+#trailer-modal.open{ display:flex; }
+
+/* ============ НАВИГАЦИЯ ============ */
+#nav{ position:fixed; top:4px; left:0; right:0; z-index:110; transition:background .4s, border-color .4s; border-bottom:1px solid transparent; }
+#nav.scrolled{ background:rgba(4,4,4,.72); backdrop-filter:blur(12px); border-bottom-color:rgba(255,255,255,.08); }
+.nav-link{ position:relative; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--ink-dim); transition:color .25s, text-shadow .25s; padding:.4rem 0; }
+.nav-link::after{ content:''; position:absolute; left:0; bottom:0; height:1px; width:0; background:var(--blood); transition:width .3s; box-shadow:0 0 8px rgba(209,15,31,.8); }
+.nav-link:hover, .nav-link.active{ color:#fff; text-shadow:0 0 12px rgba(209,15,31,.55); }
+.nav-link:hover::after, .nav-link.active::after{ width:100%; }
+#mobile-menu{ position:fixed; inset:0; z-index:150; background:rgba(3,3,3,.97); display:none; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
+#mobile-menu.open{ display:flex; }
+
+/* Секционное затемнение (случайные перебои света) */
+.power-dip{ animation:powerDip .3s steps(4); }
+@keyframes powerDip{ 0%{ filter:brightness(1);} 50%{ filter:brightness(.45);} 100%{ filter:brightness(1);} }
+
+/* ============ УТИЛИТЫ ============ */
+.hidden-svg-defs{ position:absolute; width:0; height:0; overflow:hidden; }
+.chip{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+  border:1px solid rgba(255,255,255,.14); padding:.4rem .8rem; color:var(--ink-dim); display:inline-flex; align-items:center; gap:.5rem; }
+.chip.red{ border-color:rgba(209,15,31,.5); color:#e7b8bb; }
+.chip.green{ border-color:rgba(63,174,90,.5); color:#bfe6c9; }
+.kicker-line{ width:100%; height:1px; background:linear-gradient(90deg, transparent, rgba(122,12,12,.6), transparent); }
+.folder-tab{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.26em; text-transform:uppercase;
+  display:inline-block; background:#1d1c19; color:var(--ink-dim); padding:.45rem 1.2rem; border:1px solid #2e2d29; border-bottom:none; }
+.spec-table td{ padding:.75rem .9rem; border-bottom:1px dotted rgba(232,230,223,.13); font-size:12px; vertical-align:top; }
+.spec-table td:first-child{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.14em; color:var(--ink-dim); text-transform:uppercase; width:34%; }
+
+/* Доступность: видимый фокус */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible{ outline:2px solid var(--blood); outline-offset:3px; }
+.skip-link{ position:fixed; top:-60px; left:12px; z-index:300; background:#000; color:#fff; padding:.6rem 1rem;
+  border:1px solid var(--blood); font-family:'IBM Plex Mono',monospace; font-size:11px; transition:top .2s; }
+.skip-link:focus{ top:12px; }
+
+/* ============ PREFERS-REDUCED-MOTION ============ */
+body.reduced #fx-grain, body.reduced #fx-scan, body.reduced .lamp, body.reduced .shadowpass,
+body.reduced .glass-drop, body.reduced #rain-canvas{ display:none !important; }
+body.reduced *, body.reduced *::before, body.reduced *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+html.reduced{ scroll-behavior:auto; }
+</style>
+</head>
+<body class="locked">
+
+<a href="#about" class="skip-link">ПЕРЕЙТИ К СОДЕРЖИМОМУ</a>
+
+<!-- Скрытые SVG-определения (градиент крови и силуэт для заглушек) -->
+<svg class="hidden-svg-defs" aria-hidden="true">
+  <defs>
+    <linearGradient id="bloodGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a0606"/><stop offset=".55" stop-color="#8f0e14"/><stop offset="1" stop-color="#d10f1f"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- ================= ПРЕЛОУДЕР ================= -->
+<div id="preloader" role="status" aria-label="Загрузка данных">
+  <div id="pre-logo" class="w-24 h-24 md:w-28 md:h-28 pre-flicker" aria-hidden="true"></div>
+  <div id="pre-lines" class="font-mono text-[10px] md:text-[11px] leading-5 text-[#7fbf8e] mt-8 w-[300px] md:w-[420px] min-h-[110px]" aria-hidden="true"></div>
+  <div class="w-[300px] md:w-[420px] mt-4" aria-hidden="true">
+    <div class="flex justify-between font-mono text-[10px] text-[#5c5a52] mb-1">
+      <span>ЗАГРУЗКА ДАННЫХ...</span><span id="pre-pct">0%</span>
+    </div>
+    <div class="h-[6px] bg-[#141414] border border-[#242424]">
+      <div id="pre-bar" class="h-full w-0" style="background:linear-gradient(90deg,#7a0c0c,#d10f1f); box-shadow:0 0 14px rgba(209,15,31,.8)"></div>
+    </div>
+  </div>
+  <p class="font-mono text-[9px] tracking-[0.35em] text-[#44423c] mt-8 uppercase">Umbrella Corp. — внутренний терминал</p>
+  <p class="font-mono text-[9px] text-[#2e2d29] mt-2 uppercase">[нажмите, чтобы пропустить]</p>
+</div>
+
+<!-- ================= ЭФФЕКТ-СЛОИ ================= -->
+<div id="fx-vignette" class="fx" aria-hidden="true"></div>
+<div id="fx-flash" class="fx" aria-hidden="true"></div>
+<canvas id="rain-canvas" class="fx" style="z-index:92" aria-hidden="true"></canvas>
+<div id="fx-drops" class="fx" aria-hidden="true"></div>
+<div id="fx-blackout" class="fx" aria-hidden="true"></div>
+<div id="fx-scan" class="fx" aria-hidden="true"></div>
+<div id="fx-grain" class="fx" aria-hidden="true"></div>
+<div id="fx-whisper" class="fx" aria-hidden="true"></div>
+<span id="whisper-text" class="whisper-text" aria-hidden="true"></span>
+<div id="cursor-ring" aria-hidden="true"></div>
+<div id="cursor-dot" aria-hidden="true"></div>
+
+<!-- Полоска здоровья / прогресс скролла -->
+<div id="ecg-bar" aria-hidden="true"><div id="ecg-fill"></div></div>
+
+<!-- ================= НАВИГАЦИЯ ================= -->
+<header id="nav">
+  <nav class="max-w-[1500px] mx-auto flex items-center justify-between gap-4 px-4 md:px-8 h-[64px]" aria-label="Основная навигация">
+    <a href="#hero" class="flex items-center gap-3 group">
+      <span id="nav-logo" class="w-8 h-8 block group-hover:rotate-45 transition-transform duration-500" aria-hidden="true"></span>
+      <span class="font-display font-bold tracking-[0.2em] text-sm md:text-base">RE<span class="text-blood">:</span>REQUIEM</span>
+      <span class="hidden xl:inline font-mono text-[9px] text-[#5c5a52] tracking-[0.3em] uppercase ml-2">Терминал Umbrella // сеанс активен</span>
+    </a>
+    <div class="hidden lg:flex items-center gap-6">
+      <a class="nav-link" href="#about"><span class="text-blood">01/</span> Досье</a>
+      <a class="nav-link" href="#heroes"><span class="text-blood">02/</span> Герои</a>
+      <a class="nav-link" href="#locations"><span class="text-blood">03/</span> Локации</a>
+      <a class="nav-link" href="#threats"><span class="text-blood">04/</span> Угрозы</a>
+      <a class="nav-link" href="#inventory"><span class="text-blood">05/</span> Инвентарь</a>
+      <a class="nav-link" href="#gallery"><span class="text-blood">06/</span> Галерея</a>
+      <a class="nav-link" href="#trailer"><span class="text-blood">07/</span> Трейлер</a>
+      <a class="nav-link" href="#specs"><span class="text-blood">08/</span> Требования</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <svg width="46" height="18" viewBox="0 0 46 18" class="hidden md:block" aria-hidden="true">
+        <polyline class="ecg-line" points="0,9 8,9 11,3 14,15 17,6 20,9 30,9 33,4 36,14 40,9 46,9"/>
+      </svg>
+      <span class="hidden md:flex items-center gap-2 font-mono text-[9px] tracking-[0.25em] text-[#8a8880] uppercase"><span class="rec-dot"></span> запись</span>
+      <button id="burger" class="lg:hidden flex flex-col gap-[5px] p-2" aria-label="Открыть меню" aria-expanded="false">
+        <span class="w-6 h-[2px] bg-[#e8e6df] block"></span>
+        <span class="w-6 h-[2px] bg-[#d10f1f] block"></span>
+        <span class="w-6 h-[2px] bg-[#e8e6df] block"></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- Мобильное меню -->
+<div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Мобильное меню">
+  <button id="burger-close" class="absolute top-6 right-6 font-mono text-xs tracking-[0.3em] text-[#9b988e] border border-[#333] px-4 py-2" aria-label="Закрыть меню">ЗАКРЫТЬ ✕</button>
+  <nav class="flex flex-col items-center gap-6" aria-label="Мобильная навигация">
+    <a class="nav-link text-lg" href="#about">Досье</a>
+    <a class="nav-link text-lg" href="#heroes">Герои</a>
+    <a class="nav-link text-lg" href="#locations">Локации</a>
+    <a class="nav-link text-lg" href="#threats">Угрозы</a>
+    <a class="nav-link text-lg" href="#inventory">Инвентарь</a>
+    <a class="nav-link text-lg" href="#saferoom">Сейф-рум</a>
+    <a class="nav-link text-lg" href="#gallery">Галерея</a>
+    <a class="nav-link text-lg" href="#trailer">Трейлер</a>
+    <a class="nav-link text-lg" href="#specs">Требования</a>
+    <a class="nav-link text-lg text-blood" href="#buy">Купить</a>
+  </nav>
+</div>
+
+<div id="app">
+<main>
+
+<!-- ================= HERO ================= -->
+<section id="hero" class="relative min-h-[100svh] flex items-center justify-center overflow-hidden" aria-label="Главный экран">
+  <!-- Слой фона: руины (параллакс) -->
+  <div class="absolute inset-0" data-depth="14">
+    <img id="hero-bg-img" data-img-key="heroBg" data-local="hero-bg" data-label="РАККУН-СИТИ // 1998" alt="Руины Раккун-Сити под дождём" class="w-full h-full object-cover scale-110" referrerpolicy="no-referrer">
+  </div>
+  <div class="absolute inset-0" data-depth="8" style="background:linear-gradient(180deg, rgba(5,5,5,.82) 0%, rgba(5,5,5,.35) 40%, rgba(5,5,5,.7) 78%, #050505 100%);"></div>
+  <div class="absolute inset-0" style="background:radial-gradient(ellipse at 50% 70%, rgba(122,12,12,.16), transparent 60%); mix-blend-mode:screen;"></div>
+  <!-- Мигающая лампа -->
+  <div class="lamp" style="top:6%; right:12%;" data-depth="22" aria-hidden="true"></div>
+  <div class="lamp" style="bottom:-6%; left:4%; width:300px; height:300px; animation-delay:-2.7s; opacity:.5;" data-depth="18" aria-hidden="true"></div>
+  <!-- Тени, проходящие на заднем плане -->
+  <div class="shadowpass" data-depth="10" aria-hidden="true"></div>
+  <div class="shadowpass" style="animation-delay:-17s; animation-duration:41s; width:140px;" data-depth="6" aria-hidden="true"></div>
+
+  <!-- Контент hero -->
+  <div id="hero-content" class="relative z-10 text-center px-4 pt-28 pb-24">
+    <p id="hero-kicker" class="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-herb opacity-0">// Девятая глава. Возвращение туда, где всё началось //</p>
+    <h2 id="hero-re" class="font-display font-700 tracking-[0.42em] text-[#cfccc2] mt-6 opacity-0" style="font-weight:700; font-size:clamp(.9rem,2.6vw,1.5rem); text-indent:.42em;">RESIDENT&nbsp;EVIL</h2>
+    <h1 id="hero-title" class="h-title-glitch font-display font-black uppercase text-[#ece9e0] mt-2" data-text="REQUIEM" style="text-shadow:0 0 60px rgba(209,15,31,.25), 0 4px 34px rgba(0,0,0,.9);">REQUIEM</h1>
+    <p class="font-mono text-[10px] md:text-xs tracking-[0.6em] text-[#8a8880] mt-2 uppercase">— реквием девятый акт —</p>
+    <p id="hero-tag" class="font-type text-base md:text-xl text-[#d9d5c9] mt-8 min-h-[30px] max-w-xl mx-auto"></p>
+    <div id="hero-btns" class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 opacity-0">
+      <button class="btn-blood" data-open-trailer="main">
+        <svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M2 1l9 5-9 5z"/></svg>
+        Смотреть трейлер
+      </button>
+      <a href="#buy" class="btn-ghost">
+        Купить — 27.02.2026
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+    <div id="hero-meta" class="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-10 opacity-0">
+      <span class="chip red">Релиз 27.02.2026</span>
+      <span class="chip">RE ENGINE</span>
+      <span class="chip">PC · PS5 · Xbox Series X|S · Switch 2</span>
+      <span class="chip">PEGI 18</span>
+    </div>
+  </div>
+
+  <!-- Боковая вертикальная подпись -->
+  <div class="hidden md:block absolute left-6 top-1/2 -translate-y-1/2 z-10 font-mono text-[9px] tracking-[0.4em] text-[#5c5a52] uppercase" style="writing-mode:vertical-rl;" aria-hidden="true">
+    биологическая угроза // уровень 4 // вренвуд
+  </div>
+  <div class="hidden md:block absolute right-6 top-1/2 -translate-y-1/2 z-10 font-mono text-[9px] tracking-[0.4em] text-[#5c5a52] uppercase" style="writing-mode:vertical-rl;" aria-hidden="true">
+    raccoon city — 28 лет спустя
+  </div>
+
+  <!-- Индикатор скролла -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2" aria-hidden="true">
+    <span class="font-mono text-[9px] tracking-[0.4em] text-[#8a8880] uppercase">спускайтесь во тьму</span>
+    <svg width="16" height="26" viewBox="0 0 16 26" class="animate-bounce"><rect x="1" y="1" width="14" height="24" rx="7" fill="none" stroke="#5c5a52" stroke-width="1.5"/><circle cx="8" cy="8" r="2.5" fill="#d10f1f"/></svg>
+  </div>
+</section>
+
+<!-- ================= БЕГУЩАЯ СТРОКА ================= -->
+<div class="ticker-wrap py-3" aria-hidden="true">
+  <div class="ticker font-mono text-[11px] tracking-[0.22em] uppercase text-[#9b988e]" id="ticker-track"></div>
+</div>
+
+<!-- ================= ДОСЬЕ / ОБ ИГРЕ ================= -->
+<section id="about" class="relative py-24 md:py-36 overflow-hidden">
+  <div class="absolute inset-0 opacity-[.045] pointer-events-none" id="biohazard-watermark" aria-hidden="true"></div>
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8">
+    <header class="mb-14" data-reveal>
+      <p class="sec-kicker">Секция 01 // архив umbrellа</p>
+      <h2 class="sec-title aberr mt-4">Досье на город</h2>
+    </header>
+    <div class="grid lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+      <!-- Текст досье -->
+      <article class="lg:col-span-7 plate scratched p-6 md:p-10 relative" data-reveal="left">
+        <span class="stamp" style="top:18px; right:22px;">Confidential</span>
+        <p class="font-mono text-[10px] tracking-[0.3em] text-[#8a8880] uppercase mb-6">Дело № RQ-2026-09 // уровень доступа: 4</p>
+        <div id="dossier-text" class="font-type text-[15px] md:text-[17px] leading-8 text-[#d9d5c9] space-y-6 min-h-[380px]" aria-live="polite"></div>
+        <div class="kicker-line mt-8"></div>
+        <p class="font-mono text-[10px] text-[#5c5a52] mt-4 uppercase tracking-[0.2em]">Скан №3 из 12. Хранить в архиве. Не распространять.</p>
+      </article>
+      <!-- Факты и счётчики -->
+      <aside class="lg:col-span-5 space-y-8" data-reveal="right">
+        <figure class="plate p-3">
+          <img data-img-key="perspectives" data-local="perspectives" data-label="ВИДЫ КАМЕРЫ" alt="Сравнение вида от первого и третьего лица" class="w-full object-cover" loading="lazy" referrerpolicy="no-referrer">
+          <figcaption class="font-mono text-[10px] tracking-[0.18em] text-[#8a8880] uppercase pt-3 pb-1 px-1">Свободное переключение: вид от 1-го и 3-го лица</figcaption>
+        </figure>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="plate p-5 text-center">
+            <p class="font-display font-black text-4xl md:text-5xl text-blood"><span data-count="28">0</span></p>
+            <p class="font-mono text-[10px] tracking-[0.2em] uppercase text-[#8a8880] mt-2">лет после падения города</p>
+          </div>
+          <div class="plate p-5 text-center">
+            <p class="font-display font-black text-4xl md:text-5xl text-blood"><span data-count="2">0</span></p>
+            <p class="font-mono text-[10px] tracking-[0.2em] uppercase text-[#8a8880] mt-2">протагониста</p>
+          </div>
+          <div class="plate p-5 text-center">
+            <p class="font-display font-black text-4xl md:text-5xl text-blood"><span data-count="4">0</span></p>
+            <p class="font-mono text-[10px] tracking-[0.2em] uppercase text-[#8a8880] mt-2">платформы</p>
+          </div>
+          <div class="plate p-5 text-center">
+            <p class="font-display font-black text-4xl md:text-5xl text-blood"><span data-count="92">0</span></p>
+            <p class="font-mono text-[10px] tracking-[0.2em] uppercase text-[#8a8880] mt-2">Metacritic (PC)</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="chip green">RE ENGINE</span>
+          <span class="chip green">1-е / 3-е лицо</span>
+          <span class="chip green">Одиночная игра</span>
+          <span class="chip green">Survival horror</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ГЕРОИ ================= -->
+<section id="heroes" class="relative py-24 md:py-32">
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8">
+    <header class="mb-14" data-reveal>
+      <p class="sec-kicker">Секция 02 // личные дела</p>
+      <h2 class="sec-title aberr mt-4">Два свидетеля</h2>
+      <p class="font-mono text-[11px] text-[#8a8880] mt-4 max-w-2xl leading-6 uppercase tracking-[0.12em]">Хоррор выживания Грейс и экшен Леона сплетаются в одну ночь. Их файлы ниже — изучите, пока свет не погас.</p>
+    </header>
+
+    <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+      <!-- ДЕЛО: ГРЕЙС -->
+      <article class="hero-card paper-bg relative border border-[#2b2925] p-6 md:p-8" data-tilt data-reveal="zoom" aria-label="Личное дело: Грейс Эшкрофт">
+        <span class="folder-tab">Дело № fbi-a-0098</span>
+        <div class="grid sm:grid-cols-[minmax(0,240px)_1fr] gap-6 mt-4">
+          <figure class="relative">
+            <div class="bg-[#d6d0bb] p-2 pb-8 shadow-[0_14px_40px_rgba(0,0,0,.6)] rotate-[-1.2deg]">
+              <div class="fig aspect-[3/4]">
+                <img class="main" data-img-key="graceHero" data-local="hero-grace" data-label="ГРЕЙС ЭШКРОФТ" alt="Портрет Грейс Эшкрофт — аналитик ФБР" loading="lazy" referrerpolicy="no-referrer">
+                <div class="g-layer g-r" aria-hidden="true"></div>
+                <div class="g-layer g-b" aria-hidden="true"></div>
+              </div>
+              <figcaption class="font-type text-[11px] text-[#3a372e] text-center pt-2">ЭШКРОФТ, ГРЕЙС — фото при поступлении</figcaption>
+            </div>
+            <!-- Скрепка -->
+            <svg class="absolute -top-3 left-6 w-6 h-14 rotate-[14deg]" viewBox="0 0 24 56" fill="none" aria-hidden="true">
+              <path d="M15 6c3.5 0 5 2.6 5 5.5V40c0 5.5-3.6 9.5-9 9.5S2.5 45.5 2.5 40V13C2.5 8.6 5 6 8.5 6" stroke="#aeb4b8" stroke-width="2.4"/>
+              <path d="M15 6v27c0 3-1.6 5-4 5s-4-2-4-5V14" stroke="#8d9296" stroke-width="2.4"/>
+            </svg>
+            <span class="stamp" style="bottom:-8px; right:-10px;">Confidential</span>
+          </figure>
+          <div>
+            <h3 class="font-display font-bold text-2xl md:text-3xl tracking-wide uppercase">Грейс<br>Эшкрофт</h3>
+            <p class="font-mono text-[10px] tracking-[0.3em] text-herb uppercase mt-2">Аналитик ФБР // технический отдел</p>
+            <div class="mt-5 space-y-0">
+              <div class="file-row"><b>Статус</b><span>полевое задание</span></div>
+              <div class="file-row"><b>Специализация</b><span>анализ, дедукция</span></div>
+              <div class="file-row"><b>Огн. подготовка</b><span>минимальная</span></div>
+              <div class="file-row"><b>Психопрофиль</b><span class="redacted">тревожная</span></div>
+              <div class="file-row"><b>Родственные связи</b><span>Алисса Эшкрофт †</span></div>
+            </div>
+          </div>
+        </div>
+        <blockquote class="font-type text-[15px] leading-7 text-[#cfc9b4] border-l-2 border-[#7a0c0c] pl-4 mt-7">
+          «Смерть матери сломала в ней что-то важное. Она ушла в работу с головой — и теперь едет в заброшенный отель одна. Одна. В темноту, где её уже ждут».
+        </blockquote>
+        <p class="font-mono text-[10px] text-[#5c5a52] mt-5 uppercase tracking-[0.18em]">Из служебной характеристики // отдел кадров ФБР</p>
+      </article>
+
+      <!-- ДЕЛО: ЛЕОН -->
+      <article class="hero-card paper-bg relative border border-[#2b2925] p-6 md:p-8" data-tilt data-reveal="zoom" aria-label="Личное дело: Леон С. Кеннеди">
+        <span class="folder-tab">Дело № dso-k-1977</span>
+        <div class="grid sm:grid-cols-[minmax(0,240px)_1fr] gap-6 mt-4">
+          <figure class="relative">
+            <div class="bg-[#d6d0bb] p-2 pb-8 shadow-[0_14px_40px_rgba(0,0,0,.6)] rotate-[1.4deg]">
+              <div class="fig aspect-[3/4]">
+                <img class="main" data-img-key="leonHero" data-local="hero-leon" data-label="ЛЕОН С. КЕННЕДИ" alt="Портрет Леона С. Кеннеди — агент DSO" loading="lazy" referrerpolicy="no-referrer">
+                <div class="g-layer g-r" aria-hidden="true"></div>
+                <div class="g-layer g-b" aria-hidden="true"></div>
+              </div>
+              <figcaption class="font-type text-[11px] text-[#3a372e] text-center pt-2">КЕННЕДИ, ЛЕОН С. — архивное фото, 2005</figcaption>
+            </div>
+            <svg class="absolute -top-3 right-8 w-6 h-14 rotate-[-16deg]" viewBox="0 0 24 56" fill="none" aria-hidden="true">
+              <path d="M15 6c3.5 0 5 2.6 5 5.5V40c0 5.5-3.6 9.5-9 9.5S2.5 45.5 2.5 40V13C2.5 8.6 5 6 8.5 6" stroke="#aeb4b8" stroke-width="2.4"/>
+              <path d="M15 6v27c0 3-1.6 5-4 5s-4-2-4-5V14" stroke="#8d9296" stroke-width="2.4"/>
+            </svg>
+            <span class="stamp" style="bottom:-8px; left:-10px;">Архив // 2005</span>
+          </figure>
+          <div>
+            <h3 class="font-display font-bold text-2xl md:text-3xl tracking-wide uppercase">Леон С.<br>Кеннеди</h3>
+            <p class="font-mono text-[10px] tracking-[0.3em] text-herb uppercase mt-2">Агент DSO // ветеран биотеррора</p>
+            <div class="mt-5 space-y-0">
+              <div class="file-row"><b>Статус</b><span>активный агент</span></div>
+              <div class="file-row"><b>Специализация</b><span>ближний бой, стрельба</span></div>
+              <div class="file-row"><b>Выжил в</b><span>Раккун-Сити, 1998</span></div>
+              <div class="file-row"><b>Операций</b><span class="redacted">много</span></div>
+              <div class="file-row"><b>Куратор</b><span class="redacted">Ханниган</span></div>
+            </div>
+          </div>
+        </div>
+        <blockquote class="font-type text-[15px] leading-7 text-[#cfc9b4] border-l-2 border-[#7a0c0c] pl-4 mt-7">
+          «Один из выживших в той ночи 1998-го. С тех пор он прошёл десятки вспышек. Теперь, постаревший и поседевший, он возвращается туда, где начался его кошмар».
+        </blockquote>
+        <p class="font-mono text-[10px] text-[#5c5a52] mt-5 uppercase tracking-[0.18em]">Из архива DSO // материалы наблюдения</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ЛОКАЦИИ ================= -->
+<section id="locations" class="relative py-24 md:py-32">
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8">
+    <header class="mb-10" data-reveal>
+      <p class="sec-kicker">Секция 03 // места событий</p>
+      <h2 class="sec-title aberr mt-4">География кошмара</h2>
+    </header>
+    <div class="flex gap-2 overflow-x-auto pb-2 mb-8" role="tablist" aria-label="Локации игры" data-reveal>
+      <button class="loc-tab active" role="tab" aria-selected="true" data-loc="0">01 / Руины Раккун-Сити</button>
+      <button class="loc-tab" role="tab" aria-selected="false" data-loc="1">02 / Отель «Вренвуд»</button>
+      <button class="loc-tab" role="tab" aria-selected="false" data-loc="2">03 / Роудс-Хилл</button>
+      <button class="loc-tab" role="tab" aria-selected="false" data-loc="3">04 / Мёртвые коридоры</button>
+    </div>
+    <div id="loc-panel" class="grid lg:grid-cols-12 gap-0 plate overflow-hidden" data-reveal="zoom" role="tabpanel">
+      <div class="loc-media lg:col-span-7 relative min-h-[300px] md:min-h-[460px]">
+        <img id="loc-img" data-img-key="locCity" data-local="loc-city" data-label="ЛОКАЦИЯ" alt="" class="absolute inset-0 w-full h-full object-cover" loading="lazy" referrerpolicy="no-referrer">
+        <div class="loc-tint" aria-hidden="true"></div>
+        <div class="loc-shade" aria-hidden="true"></div>
+        <p id="loc-code" class="absolute top-4 left-4 font-mono text-[10px] tracking-[0.3em] text-[#cfccc2] uppercase bg-black/50 px-3 py-1">CAM 01 // СЕКТОР R-99</p>
+        <span class="absolute bottom-4 right-4 rec-dot" aria-hidden="true"></span>
+      </div>
+      <div class="lg:col-span-5 p-7 md:p-10 flex flex-col justify-center relative">
+        <p class="font-mono text-[10px] tracking-[0.35em] text-herb uppercase" id="loc-index">Локация 01 / 04</p>
+        <h3 id="loc-name" class="font-display font-bold text-2xl md:text-4xl uppercase mt-3 tracking-wide">Руины Раккун-Сити</h3>
+        <p id="loc-sub" class="font-type text-[#b3aea0] mt-2">Город, стёртый с лица земли</p>
+        <p id="loc-desc" class="text-[15px] leading-7 text-[#c9c5ba] mt-5"></p>
+        <div class="mt-7 space-y-2" id="loc-notes"></div>
+        <div class="kicker-line mt-8"></div>
+        <p id="loc-light" class="font-mono text-[10px] text-[#8a8880] uppercase tracking-[0.18em] mt-4"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= УГРОЗЫ ================= -->
+<section id="threats" class="relative py-24 md:py-32">
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8">
+    <header class="mb-14" data-reveal>
+      <p class="sec-kicker">Секция 04 // реестр образцов</p>
+      <h2 class="sec-title aberr mt-4">То, что ждёт в темноте</h2>
+      <p class="font-mono text-[11px] text-[#8a8880] mt-4 max-w-2xl leading-6 uppercase tracking-[0.12em]">Часть файлов изъята из открытого доступа. То, что осталось — читайте быстро.</p>
+    </header>
+    <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-6" id="threat-grid"><!-- карточки генерируются JS --></div>
+  </div>
+</section>
+
+<!-- ================= ИНВЕНТАРЬ ================= -->
+<section id="inventory" class="relative py-24 md:py-32">
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8">
+    <header class="mb-10" data-reveal>
+      <p class="sec-kicker">Секция 05 // управление ресурсами</p>
+      <h2 class="sec-title aberr mt-4">Чемодан выживания</h2>
+      <p class="font-mono text-[11px] text-[#8a8880] mt-4 max-w-2xl leading-6 uppercase tracking-[0.12em]">Перетаскивайте предметы по ячейкам. Нажмите на две травы по очереди (или перетащите одну на другую), чтобы скомбинировать. Наведите курсор, чтобы изучить.</p>
+    </header>
+    <div class="grid lg:grid-cols-[1fr_330px] gap-8 items-start">
+      <div class="plate scratched p-5 md:p-7" data-reveal="left">
+        <div class="flex items-center justify-between mb-4">
+          <p class="font-mono text-[10px] tracking-[0.3em] text-[#8a8880] uppercase">Кейс // 8 ячеек</p>
+          <p class="font-mono text-[10px] tracking-[0.3em] text-[#8a8880] uppercase" id="inv-count">занято: 8/8</p>
+        </div>
+        <div id="inv-grid" class="grid grid-cols-4 gap-2 md:gap-3" aria-label="Сетка инвентаря"></div>
+        <div id="inv-log" class="mt-5 space-y-1 min-h-[96px] border-t border-[#222426] pt-3" aria-live="polite"></div>
+      </div>
+      <aside class="plate p-6 lg:sticky lg:top-28" data-reveal="right" aria-label="Осмотр предмета">
+        <p class="font-mono text-[10px] tracking-[0.3em] text-herb uppercase mb-4">// Осмотр предмета</p>
+        <div id="exam-icon" class="h-32 flex items-center justify-center border border-[#242629] bg-[#0a0b0c] mb-4"></div>
+        <h3 id="exam-name" class="font-type text-xl text-[#e8e6df]">—</h3>
+        <p id="exam-type" class="font-mono text-[10px] tracking-[0.25em] text-[#8a8880] uppercase mt-1"></p>
+        <p id="exam-desc" class="text-sm leading-6 text-[#b9b5aa] mt-4 min-h-[72px]">Наведите курсор на предмет в кейсе, чтобы прочитать описание.</p>
+        <div class="kicker-line mt-4"></div>
+        <p id="exam-hint" class="font-mono text-[10px] text-[#7d7b72] mt-3 uppercase tracking-[0.12em] leading-5"></p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ================= СЕЙФ-РУМ ================= -->
+<section id="saferoom" class="relative py-24 md:py-32 overflow-hidden">
+  <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse at 50% 100%, rgba(63,174,90,.06), transparent 60%);"></div>
+  <div class="max-w-[1200px] mx-auto px-4 md:px-8">
+    <header class="mb-14 text-center" data-reveal>
+      <p class="sec-kicker justify-center" style="justify-content:center;">Секция 05А // безопасная зона</p>
+      <h2 class="sec-title aberr mt-4">Комната сохранения</h2>
+      <p class="font-mono text-[11px] text-[#8a8880] mt-4 uppercase tracking-[0.14em]">Здесь не доходят шаги. Почти.</p>
+    </header>
+    <div class="grid lg:grid-cols-2 gap-10 items-center">
+      <!-- Пишущая машинка -->
+      <div class="plate p-6 md:p-8" data-reveal="left" aria-label="Пишущая машинка">
+        <div class="tw-paper mx-auto max-w-[420px] h-[236px] px-5 pt-4 pb-2 overflow-hidden relative">
+          <p class="font-type text-[10px] text-[#6b6450] text-center tracking-[0.3em] uppercase mb-2">— лист 47 —</p>
+          <div id="tw-lines" class="font-type text-[13px] leading-[22px]"></div>
+          <span id="tw-caret" class="tw-caret ml-1"></span>
+        </div>
+        <div class="max-w-[420px] mx-auto mt-4">
+          <div class="h-9 rounded-t-lg" style="background:linear-gradient(180deg,#33353a,#1c1d20); border:1px solid #0b0c0d; box-shadow:inset 0 1px 0 rgba(255,255,255,.12);"></div>
+          <div id="tw-keys" class="grid grid-cols-10 gap-[6px] p-3 rounded-b-lg" style="background:linear-gradient(180deg,#1e2023,#141518); border:1px solid #0b0c0d; border-top:none;"></div>
+        </div>
+        <p class="font-mono text-[10px] text-[#5c5a52] mt-4 text-center uppercase tracking-[0.2em]">Чернильных лент осталось: 3 // сохранение на сложности «Стандарт-Классика» и выше</p>
+      </div>
+      <!-- Фонограмма / эквалайзер -->
+      <div class="plate p-6 md:p-8" data-reveal="right" aria-label="Фонограмма">
+        <div class="flex items-center justify-between mb-6">
+          <p class="font-mono text-[10px] tracking-[0.3em] text-herb uppercase">Фонограмма // трек 01</p>
+          <span class="flex items-center gap-2 font-mono text-[10px] text-[#8a8880] uppercase"><span class="rec-dot"></span> loop</span>
+        </div>
+        <p class="font-type text-lg text-[#d9d5c9]">«Тема безопасной комнаты»</p>
+        <p class="font-mono text-[10px] text-[#8a8880] uppercase tracking-[0.2em] mt-1">Медленный гул пылесоса времени. Дождь за стеной. Вздох.</p>
+        <div class="eq mt-8" id="eq-bars" aria-hidden="true"></div>
+        <div class="flex items-center gap-4 mt-8">
+          <button id="audio-toggle" class="btn-ghost" aria-pressed="false">
+            <svg id="audio-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+            <span id="audio-label">Слушать фонограмму</span>
+          </button>
+          <p class="font-mono text-[10px] text-[#5c5a52] uppercase tracking-[0.14em]" id="audio-status">выключено</p>
+        </div>
+        <div class="kicker-line mt-8"></div>
+        <p class="font-mono text-[10px] text-[#5c5a52] mt-4 uppercase tracking-[0.16em] leading-5">Совет: в этой комнате монстр не войдёт. Переведите дух, разложите инвентарь, сохранитесь. Тьма подождёт.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ГАЛЕРЕЯ ================= -->
+<section id="gallery" class="relative py-24 md:py-32">
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8">
+    <header class="mb-14" data-reveal>
+      <p class="sec-kicker">Секция 06 // видеоархив</p>
+      <h2 class="sec-title aberr mt-4">Кадры из записей</h2>
+      <p class="font-mono text-[11px] text-[#8a8880] mt-4 uppercase tracking-[0.14em]">Клик — открыть на весь экран. Не смотрите слишком долго.</p>
+    </header>
+    <div id="gallery-grid" class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 [&>*]:mb-4" data-reveal></div>
+  </div>
+</section>
+
+<!-- ================= ТРЕЙЛЕР ================= -->
+<section id="trailer" class="relative py-24 md:py-32">
+  <div class="max-w-[1200px] mx-auto px-4 md:px-8">
+    <header class="mb-14 text-center" data-reveal>
+      <p class="sec-kicker" style="justify-content:center;">Секция 07 // видеонаблюдение</p>
+      <h2 class="sec-title aberr mt-4">Канал 09 — Вренвуд</h2>
+      <p class="font-mono text-[11px] text-[#8a8880] mt-4 uppercase tracking-[0.14em]">Сигнал нестабилен. Помехи — не от оборудования.</p>
+    </header>
+    <!-- Монитор видеонаблюдения -->
+    <div class="crt max-w-[880px] mx-auto" data-reveal="zoom" id="crt-main">
+      <span class="crt-screw" style="top:7px; left:9px;"></span><span class="crt-screw" style="top:7px; right:9px;"></span>
+      <span class="crt-screw" style="bottom:7px; left:9px;"></span><span class="crt-screw" style="bottom:7px; right:9px;"></span>
+      <div class="crt-screen aspect-video">
+        <img data-img-key="recPosterMain" data-local="rec-poster" data-label="КАНАЛ 09" alt="Последний кадр трансляции — трейлер Resident Evil Requiem" class="absolute inset-0 w-full h-full object-cover opacity-60" loading="lazy" referrerpolicy="no-referrer">
+        <div class="crt-glow"></div><div class="crt-scan"></div>
+        <button class="crt-play w-full" data-open-trailer="main" aria-label="Смотреть трейлер">
+          <span class="pb"><svg width="26" height="26" viewBox="0 0 12 12" fill="#e8e6df" aria-hidden="true"><path d="M3 1.5l8 4.5-8 4.5z"/></svg></span>
+        </button>
+        <p class="absolute top-3 left-3 z-[7] font-mono text-[10px] tracking-[0.25em] text-[#9ae8b0] uppercase">CAM 09 // отель «вренвуд»</p>
+        <p class="absolute top-3 right-3 z-[7] flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-[#ff6b74] uppercase"><span class="rec-dot"></span> rec</p>
+      </div>
+      <div class="crt-panel">
+        <div class="flex gap-2 items-center"><span class="crt-knob"></span><span class="crt-knob"></span><span class="crt-knob"></span></div>
+        <p class="font-mono text-[9px] tracking-[0.3em] text-[#6e6c64] uppercase">umbrella monitoring sys.</p>
+      </div>
+    </div>
+    <!-- Дополнительные записи -->
+    <div class="grid sm:grid-cols-2 gap-5 max-w-[880px] mx-auto mt-10" data-reveal>
+      <button class="g-item text-left" data-open-trailer="premiere">
+        <img data-img-key="recPoster1" data-local="rec-01" data-label="ЗАПИСЬ 01" alt="Кадр из ролика мировой премьеры" class="aspect-video object-cover" loading="lazy" referrerpolicy="no-referrer">
+        <span class="g-cap">Запись 01 // мировая премьера — sgf 2025</span>
+      </button>
+      <button class="g-item text-left" data-open-trailer="tga">
+        <img data-img-key="recPoster2" data-local="rec-02" data-label="ЗАПИСЬ 02" alt="Кадр из ролика с Леоном Кеннеди" class="aspect-video object-cover" loading="lazy" referrerpolicy="no-referrer">
+        <span class="g-cap">Запись 02 // леон — the game awards 2025</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= СИСТЕМНЫЕ ТРЕБОВАНИЯ ================= -->
+<section id="specs" class="relative py-24 md:py-32">
+  <div class="max-w-[1200px] mx-auto px-4 md:px-8">
+    <header class="mb-14" data-reveal>
+      <p class="sec-kicker">Секция 08 // технический отчёт</p>
+      <h2 class="sec-title aberr mt-4">Системные требования</h2>
+      <p class="font-mono text-[11px] text-[#8a8880] mt-4 uppercase tracking-[0.14em]">Данные PC-версии из официального отчёта (страница Steam).</p>
+    </header>
+    <div class="grid md:grid-cols-2 gap-8">
+      <article class="paper-bg border border-[#2b2925] p-6 md:p-8 relative" data-reveal="left" aria-label="Минимальные требования">
+        <span class="stamp" style="top:16px; right:18px;">Umbrella // внутренний отчёт</span>
+        <h3 class="font-display font-bold text-2xl uppercase tracking-wide">Минимальные</h3>
+        <p class="font-mono text-[10px] tracking-[0.3em] text-[#8a8880] uppercase mt-1">1080p / 30 fps (с апскейлингом)</p>
+        <table class="spec-table w-full mt-6"><tbody>
+          <tr><td>ОС</td><td>Windows 11 (64-bit)</td></tr>
+          <tr><td>Процессор</td><td>Intel Core i5-8500 / AMD Ryzen 5 3500</td></tr>
+          <tr><td>Память</td><td>16 GB RAM</td></tr>
+          <tr><td>Видеокарта</td><td>GeForce GTX 1660 6GB / Radeon RX 5500 XT 8GB</td></tr>
+          <tr><td>DirectX</td><td>Версия 12</td></tr>
+          <tr><td>Примечание</td><td class="text-[#b9b5aa]">1080p/30fps (апскейлинг, нативное 640p). Требуется SSD. Частота кадров может падать при высокой нагрузке.</td></tr>
+        </tbody></table>
+      </article>
+      <article class="paper-bg border border-[#3a2c0f] p-6 md:p-8 relative" data-reveal="right" aria-label="Рекомендуемые требования">
+        <span class="stamp" style="top:16px; right:18px; border-color:rgba(63,174,90,.8); color:rgba(63,174,90,.85);">Утверждено</span>
+        <h3 class="font-display font-bold text-2xl uppercase tracking-wide">Рекомендуемые</h3>
+        <p class="font-mono text-[10px] tracking-[0.3em] text-herb uppercase mt-1">1080p / 60 fps (с апскейлингом)</p>
+        <table class="spec-table w-full mt-6"><tbody>
+          <tr><td>ОС</td><td>Windows 11 (64-bit)</td></tr>
+          <tr><td>Процессор</td><td>Intel Core i7-8700 / AMD Ryzen 5 5500</td></tr>
+          <tr><td>Память</td><td>16 GB RAM</td></tr>
+          <tr><td>Видеокарта</td><td>GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB</td></tr>
+          <tr><td>DirectX</td><td>Версия 12</td></tr>
+          <tr><td>Примечание</td><td class="text-[#b9b5aa]">1080p/60fps (апскейлинг, нативное 720p). Требуется SSD. Частота кадров может падать при высокой нагрузке.</td></tr>
+        </tbody></table>
+      </article>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 mt-10" data-reveal>
+      <span class="chip red">PC (Steam / Epic)</span>
+      <span class="chip red">PlayStation 5</span>
+      <span class="chip red">Xbox Series X|S</span>
+      <span class="chip red">Nintendo Switch 2</span>
+      <span class="chip">Требования консольных версий уточняйте у платформодержателя</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= КУПИТЬ ================= -->
+<section id="buy" class="relative py-24 md:py-32">
+  <div class="max-w-[1100px] mx-auto px-4 md:px-8 grid md:grid-cols-[300px_1fr] gap-10 items-center">
+    <figure class="mx-auto w-[240px] md:w-full plate p-3 rotate-[-1.5deg]" data-reveal="left">
+      <img data-img-key="coverArt" data-local="cover-art" data-label="RESIDENT EVIL REQUIEM" alt="Обложка Resident Evil Requiem" class="w-full object-cover" loading="lazy" referrerpolicy="no-referrer">
+      <figcaption class="font-mono text-[9px] tracking-[0.2em] text-[#8a8880] uppercase pt-2 text-center">Официальная обложка</figcaption>
+    </figure>
+    <div data-reveal="right">
+      <p class="sec-kicker">Финальный акт // оформление</p>
+      <h2 class="sec-title aberr mt-3">Уже в продаже</h2>
+      <p class="font-type text-[17px] text-[#cfc9b4] mt-5 leading-8 max-w-xl">Город ждал вас двадцать восемь лет. Он прогнил, он помнит всё, и он голоден. Реквием по мёртвым. Кошмар для живых.</p>
+      <div class="grid sm:grid-cols-2 gap-4 mt-8 max-w-xl">
+        <div class="plate p-5">
+          <p class="font-mono text-[10px] tracking-[0.3em] text-[#8a8880] uppercase">Стандартное издание</p>
+          <p class="font-display font-black text-3xl mt-2">$69.99</p>
+          <p class="font-mono text-[10px] text-[#7d7b72] mt-2 uppercase">Основная игра</p>
+        </div>
+        <div class="plate p-5 border-[#5a100f]">
+          <p class="font-mono text-[10px] tracking-[0.3em] text-blood uppercase">Deluxe-издание</p>
+          <p class="font-display font-black text-3xl mt-2">$79.99</p>
+          <p class="font-mono text-[10px] text-[#7d7b72] mt-2 uppercase">Состав издания — см. страницу магазина</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-4 mt-8">
+        <a class="btn-blood" href="https://store.steampowered.com/app/3764200/Resident_Evil_Requiem/" target="_blank" rel="noopener">
+          Купить в Steam
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </a>
+        <a class="btn-ghost" href="https://www.residentevil.com/requiem/en-us/" target="_blank" rel="noopener">Официальный сайт</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= ПОДВАЛ ================= -->
+<footer class="relative border-t border-[#1c1d1f] pt-16 pb-10 overflow-hidden">
+  <div class="absolute -bottom-24 -right-24 w-[420px] h-[420px] opacity-[.05] pointer-events-none" id="footer-umbrella" aria-hidden="true"></div>
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-2">
+      <div class="flex items-center gap-3">
+        <span id="foot-logo" class="w-9 h-9 block" aria-hidden="true"></span>
+        <p class="font-display font-bold tracking-[0.2em]">RESIDENT EVIL <span class="text-blood">REQUIEM</span></p>
+      </div>
+      <p class="text-sm leading-7 text-[#9b988e] mt-5 max-w-md">Фанатский промо-концепт, посвящённый девятой главе серии. Реквием по мёртвым. Кошмар для живых.</p>
+      <div class="flex items-center gap-3 mt-6">
+        <a href="https://x.com/RE_Games" target="_blank" rel="noopener" class="chip hover:border-[#d10f1f]" aria-label="Официальный X Resident Evil">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3l-4.9-6.4L6.4 22H3.2l7.3-8.3L2.6 2H9l4.4 5.9L18.9 2zm-1.1 18h1.7L8.1 3.8H6.3L17.8 20z"/></svg> @RE_Games
+        </a>
+        <a href="https://www.youtube.com/watch?v=xFGneCQC6mM" target="_blank" rel="noopener" class="chip hover:border-[#d10f1f]" aria-label="Трейлер на YouTube">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 12s0-3.85-.5-5.7a2.9 2.9 0 0 0-2-2C18.7 3.8 12 3.8 12 3.8s-6.7 0-8.5.5a2.9 2.9 0 0 0-2 2C1 8.15 1 12 1 12s0 3.85.5 5.7a2.9 2.9 0 0 0 2 2c1.8.5 8.5.5 8.5.5s6.7 0 8.5-.5a2.9 2.9 0 0 0 2-2c.5-1.85.5-5.7.5-5.7zM9.8 15.6V8.4l6.1 3.6-6.1 3.6z"/></svg> YouTube
+        </a>
+      </div>
+    </div>
+    <nav aria-label="Карта сайта">
+      <p class="font-mono text-[10px] tracking-[0.3em] text-herb uppercase mb-4">// Навигация</p>
+      <ul class="space-y-2 text-sm text-[#9b988e]">
+        <li><a class="hover:text-white transition-colors" href="#about">Досье</a></li>
+        <li><a class="hover:text-white transition-colors" href="#heroes">Герои</a></li>
+        <li><a class="hover:text-white transition-colors" href="#locations">Локации</a></li>
+        <li><a class="hover:text-white transition-colors" href="#threats">Угрозы</a></li>
+        <li><a class="hover:text-white transition-colors" href="#inventory">Инвентарь</a></li>
+        <li><a class="hover:text-white transition-colors" href="#gallery">Галерея</a></li>
+        <li><a class="hover:text-white transition-colors" href="#trailer">Трейлер</a></li>
+      </ul>
+    </nav>
+    <div>
+      <p class="font-mono text-[10px] tracking-[0.3em] text-herb uppercase mb-4">// Платформы</p>
+      <ul class="space-y-2 text-sm text-[#9b988e]">
+        <li>PC — Steam / Epic Games</li>
+        <li>PlayStation 5</li>
+        <li>Xbox Series X|S</li>
+        <li>Nintendo Switch 2</li>
+      </ul>
+      <p class="font-mono text-[10px] tracking-[0.3em] text-herb uppercase mt-6 mb-3">// Возрастной рейтинг</p>
+      <span class="inline-block border-2 border-[#e8e6df] px-3 py-1 font-display font-bold text-lg">18+</span>
+    </div>
+  </div>
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8 mt-12">
+    <div class="kicker-line"></div>
+    <p class="font-mono text-[10px] leading-6 text-[#5c5a52] mt-6 uppercase tracking-[0.1em]">
+      Resident Evil, Biohazard и все связанные персонажи, логотипы и материалы являются товарными знаками ©CAPCOM CO., LTD.
+      Этот сайт — некоммерческая фанатская работа; все права на изображения и видео принадлежат их правообладателям. Собрано из открытых источников (Steam, Wikipedia).
+    </p>
+    <p class="font-mono text-[10px] text-[#3c3a34] mt-3 uppercase tracking-[0.2em]">Терминал отключён // <span id="foot-year"></span> // конец передачи</p>
+  </div>
+</footer>
+</div><!-- /#app -->
+
+<!-- ================= ЛАЙТБОКС ================= -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр изображения">
+  <button class="lb-btn" id="lb-prev" style="left:14px;" aria-label="Предыдущий кадр"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></button>
+  <figure class="max-w-[92vw]">
+    <img id="lb-img" src="" alt="" class="max-h-[80vh] w-auto mx-auto border border-[#2a2c2e] shadow-[0_30px_90px_rgba(0,0,0,.9)]" referrerpolicy="no-referrer">
+    <figcaption class="font-mono text-[11px] tracking-[0.2em] text-[#8a8880] uppercase text-center mt-4"><span id="lb-cap"></span> — <span id="lb-num" class="text-blood"></span></figcaption>
+  </figure>
+  <button class="lb-btn" id="lb-next" style="right:14px;" aria-label="Следующий кадр"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+  <button id="lb-close" class="absolute top-5 right-5 font-mono text-xs tracking-[0.3em] text-[#9b988e] border border-[#333] px-4 py-2 hover:border-[#d10f1f] transition-colors" aria-label="Закрыть">ЗАКРЫТЬ ✕</button>
+</div>
+
+<!-- ================= МОДАЛЬНОЕ ОКНО ТРЕЙЛЕРА ================= -->
+<div id="trailer-modal" role="dialog" aria-modal="true" aria-label="Видеоплеер трейлера">
+  <div class="crt w-full max-w-[960px]" id="modal-crt">
+    <span class="crt-screw" style="top:7px; left:9px;"></span><span class="crt-screw" style="top:7px; right:9px;"></span>
+    <span class="crt-screw" style="bottom:7px; left:9px;"></span><span class="crt-screw" style="bottom:7px; right:9px;"></span>
+    <div class="crt-screen aspect-video">
+      <iframe id="yt-frame" class="absolute inset-0 w-full h-full" src="" title="Трейлер Resident Evil Requiem" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      <div class="crt-scan"></div>
+      <p class="absolute top-3 left-3 z-[7] font-mono text-[10px] tracking-[0.25em] text-[#9ae8b0] uppercase" id="cam-label">CAM 09 // трансляция</p>
+      <p class="absolute top-3 right-3 z-[7] font-mono text-[10px] tracking-[0.2em] text-[#ff6b74] uppercase flex items-center gap-2"><span class="rec-dot"></span> <span id="cam-time">00:00:00</span></p>
+    </div>
+    <div class="crt-panel">
+      <div class="flex gap-2 items-center"><span class="crt-knob"></span><span class="crt-knob"></span><span class="crt-knob"></span></div>
+      <button id="tm-close" class="font-mono text-[10px] tracking-[0.3em] text-[#e8e6df] uppercase border border-[#444] px-4 py-1 hover:border-[#d10f1f] transition-colors">Закрыть канал ✕</button>
+    </div>
+  </div>
+</div>
+
+<div id="inv-ghost" style="display:none" aria-hidden="true"></div>
+
+<script>
+/* =========================================================================
+   RESIDENT EVIL REQUIEM — основная логика
+   ========================================================================= */
+'use strict';
+gsap.registerPlugin(ScrollTrigger);
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FINE_POINTER = window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+if (REDUCED){ document.body.classList.add('reduced'); document.documentElement.classList.add('reduced'); }
+
+/* =========================================================
+   1) ИЗОБРАЖЕНИЯ — все URL в одном месте.
+   Источники: CDN Steam (store_item_assets), Wikimedia (upload/thumb).
+   Замените любую ссылку здесь — сайт подхватит её автоматически.
+   Пустая строка "" = проверенной ссылки нет, сработает локальный
+   файл images/*.jpg, а затем — фирменная SVG-заглушка.
+   ========================================================= */
+const SS_BASE = 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3764200/';
+const SS_HASH = [
+  '08af4e9398b8e45152bfbedce3bc24d22e2c0990','4921eb5fb45f6b7a3b62195e47c6d7b4175935a8',
+  'e7b791b703759aebe774b813eb29a364008552b8','bbe5c4e0ba4fc551d9389cf2411c2cefe413af1d',
+  '9422ad111dfd5fe1df34352946c6aa715c23f0f6','a5ad021e191c2f3cfcb4fcdd7abe193c887b3500',
+  'e4508c17151714d5d4f80cd31bdcacf0caf5559c','b61e78a244aef7a12cf08f9dc7e7fc7ead6eeddb',
+  '3f63fb0ce70f3e97799226b70ebea4d4794c53a1','9e35202b6c8262496e1c57275c51bcead7232249'
+];
+const ss = i => SS_BASE + SS_HASH[i] + '/ss_' + SS_HASH[i] + '.1920x1080.jpg?t=1779840172';
+
+const IMAGES = {
+  // Фон hero-экрана — фон страницы игры в Steam (ки-арт)
+  heroBg: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3764200/863355a6b45cfb9c644318b9372fa937b4114e76/page_bg_raw.jpg?t=1779840172',
+  // Портрет Грейс (официальный рендер из Requiem, Wikimedia/Wikipedia)
+  graceHero: 'https://upload.wikimedia.org/wikipedia/en/a/a0/Grace_Ashcroft.png',
+  // Портрет Леона (официальный арт, Wikimedia/Wikipedia — обозначен как «архивное фото 2005»)
+  leonHero: 'https://upload.wikimedia.org/wikipedia/en/5/54/Leon_S._Kennedy.png',
+  // Обложка игры (Wikipedia)
+  coverArt: 'https://thumb.wikimedia.org/wikipedia/en/thumb/1/15/Resident_Evil_Requiem_Cover_Art.jpg/250px-Resident_Evil_Requiem_Cover_Art.jpg',
+  // Сравнение видов от 1-го и 3-го лица (Wikimedia Commons)
+  perspectives: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Resident_Evil_Requiem_-_First_person_and_third_person.jpg/500px-Resident_Evil_Requiem_-_First_person_and_third_person.jpg',
+  // Локации (скриншоты со страницы Steam)
+  locCity: ss(0), locHotel: ss(1), locRhodes: ss(2), locDark: ss(9),
+  // Угрозы (две проверенные ссылки не найдены — заглушки «фото изъято»)
+  threatZombie: ss(8), threatGirl: ss(3), threatGideon: '', threatElpis: '',
+  // Постеры записей (миниатюры роликов со Steam CDN)
+  recPosterMain: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257293410/39f26816e534d08c0e80fb56ee91ad169920fd1f/movie_600x337.jpg?t=1772168374',
+  recPoster1: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257152668/d565fef47796f0dae9527bc6df2d94637114bba5/movie_600x337.jpg?t=1749263824',
+  recPoster2: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257250473/57f9e21a5c5a70c8aba0daa2f11c20b8e914268f/movie_600x337.jpg?t=1765935678'
+};
+// Галерея: 8 кадров (Steam-скриншоты + capsule + сравнение ракурсов)
+const GALLERY = [
+  { url: ss(4), local: 'gallery-01', cap: 'Архив // кадр 01' },
+  { url: ss(5), local: 'gallery-02', cap: 'Архив // кадр 02' },
+  { url: ss(6), local: 'gallery-03', cap: 'Архив // кадр 03' },
+  { url: ss(7), local: 'gallery-04', cap: 'Архив // кадр 04' },
+  { url: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3764200/ce5437442768e38eb575f205ab9397d0264017b0/header.jpg?t=1779840172', local: 'gallery-05', cap: 'Ки-арт // заголовок' },
+  { url: IMAGES.perspectives, local: 'gallery-06', cap: 'Ракурсы камеры // 1-е и 3-е лицо' },
+  { url: ss(8), local: 'gallery-07', cap: 'Архив // кадр 07 — угроза' },
+  { url: ss(3), local: 'gallery-08', cap: 'Архив // кадр 08 — она рядом' }
+];
+// Трейлеры (YouTube, официальные ролики Capcom)
+const TRAILERS = {
+  main:     { yt: 'xFGneCQC6mM', label: 'РОЛИК // TGA 2025 — ЛЕОН И ГРЕЙС' },
+  premiere: { yt: 'yh7TVa8yUf8', label: 'ЗАПИСЬ 01 // МИРОВАЯ ПРЕМЬЕРА' },
+  tga:      { yt: 'xFGneCQC6mM', label: 'ЗАПИСЬ 02 // THE GAME AWARDS 2025' }
+};
+
+/* =========================================================
+   2) ЗАГРУЗЧИК ИЗОБРАЖЕНИЙ с цепочкой фолбэков:
+   удалённый URL → локальный images/*.jpg → SVG-заглушка
+   ========================================================= */
+const RESOLVED = {}; // кэш разрешённых src по ключу
+
+function placeholderSVG(label, sub){
+  const l = (label || 'НЕТ ДАННЫХ').slice(0, 40);
+  const s = (sub || 'ФАЙЛ ИЗЪЯТ ИЗ ДЕЛА').slice(0, 46);
+  const svg =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1120" viewBox="0 0 900 1120">' +
+  '<rect width="900" height="1120" fill="#0b0b0c"/>' +
+  '<rect x="26" y="26" width="848" height="1068" fill="none" stroke="#26282b" stroke-width="2"/>' +
+  '<rect x="44" y="44" width="812" height="1032" fill="none" stroke="#1c1e20" stroke-width="1"/>' +
+  // Силуэт «человек без лица»
+  '<g opacity="0.9">' +
+  '<circle cx="450" cy="420" r="120" fill="#151619"/>' +
+  '<path d="M230 780 C250 640 330 590 450 590 C570 590 650 640 670 780 L670 860 L230 860 Z" fill="#151619"/>' +
+  '</g>' +
+  // Зачёркивание
+  '<rect x="180" y="392" width="540" height="58" fill="#050505" stroke="#2a0a0a" stroke-width="2" transform="rotate(-3 450 420)"/>' +
+  '<text x="450" y="436" text-anchor="middle" font-family="monospace" font-size="26" fill="#8f0e14" letter-spacing="6" transform="rotate(-3 450 420)">ДАННЫЕ ЗАСЕКРЕЧЕНЫ</text>' +
+  '<text x="450" y="950" text-anchor="middle" font-family="monospace" font-size="30" fill="#c9c5ba" letter-spacing="8">' + l + '</text>' +
+  '<text x="450" y="992" text-anchor="middle" font-family="monospace" font-size="17" fill="#7a0c0c" letter-spacing="5">' + s + '</text>' +
+  '<text x="450" y="1040" text-anchor="middle" font-family="monospace" font-size="12" fill="#44423c" letter-spacing="4">ПОМЕСТИТЕ ФАЙЛ В images/ ДЛЯ ВОССТАНОВЛЕНИЯ</text>' +
+  '</svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+function tryLoad(url){
+  return new Promise(resolve => {
+    if (!url) return resolve(false);
+    const im = new Image();
+    im.referrerPolicy = 'no-referrer';
+    im.onload = () => resolve(true);
+    im.onerror = () => resolve(false);
+    im.src = url;
+  });
+}
+
+async function resolveImage(key, primary, localName, label, sub){
+  if (RESOLVED[key]) return RESOLVED[key];
+  let src = '';
+  if (primary && await tryLoad(primary)) {
+    src = primary;
+  } else {
+    const local = 'images/' + (localName || key) + '.jpg';
+    if (await tryLoad(local)) src = local;
+    else src = placeholderSVG(label, sub);
+  }
+  RESOLVED[key] = src;
+  return src;
+}
+
+function applyImage(el, src){
+  if (el.tagName === 'IMG') { el.src = src; el.removeAttribute('srcset'); }
+  else el.style.backgroundImage = 'url("' + src + '")';
+  // Клоны для глитч-эффекта в фото досье
+  const fig = el.closest('.fig');
+  if (fig){
+    fig.querySelectorAll('.g-layer').forEach(l => { l.style.backgroundImage = 'url("' + src + '")'; });
+  }
+}
+
+async function initImages(){
+  const jobs = [];
+  document.querySelectorAll('[data-img-key]').forEach(el => {
+    const key = el.dataset.imgKey;
+    const job = resolveImage(key, IMAGES[key] || '', el.dataset.local, el.dataset.label, el.dataset.sub)
+      .then(src => applyImage(el, src));
+    jobs.push(job);
+  });
+  return Promise.all(jobs);
+}
+
+/* =========================================================
+   3) ЛОГОТИП UMBRELLA (SVG генерируется кодом)
+   ========================================================= */
+function umbrellaSVG(){
+  let segs = '';
+  for (let i = 0; i < 8; i++){
+    const a1 = (i * 45 - 90) * Math.PI / 180, a2 = ((i + 1) * 45 - 90) * Math.PI / 180;
+    const r = 46;
+    const x1 = (50 + r * Math.cos(a1)).toFixed(2), y1 = (50 + r * Math.sin(a1)).toFixed(2);
+    const x2 = (50 + r * Math.cos(a2)).toFixed(2), y2 = (50 + r * Math.sin(a2)).toFixed(2);
+    const c = i % 2 === 0 ? '#d10f1f' : '#e3ded0';
+    segs += '<path d="M50 50 L' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + ' Z" fill="' + c + '"/>';
+  }
+  return '<svg viewBox="0 0 100 100" width="100%" height="100%" role="img" aria-label="Логотип Umbrella Corporation">' +
+    segs +
+    '<circle cx="50" cy="50" r="46.5" fill="none" stroke="#0c0c0c" stroke-width="3"/>' +
+    '<circle cx="50" cy="50" r="8" fill="#0c0c0c"/>' +
+    '</svg>';
+}
+document.getElementById('pre-logo').innerHTML = umbrellaSVG();
+document.getElementById('nav-logo').innerHTML = umbrellaSVG();
+document.getElementById('foot-logo').innerHTML = umbrellaSVG();
+document.getElementById('footer-umbrella').innerHTML = umbrellaSVG();
+
+// Вотермарк «биологическая угроза» в секции досье
+document.getElementById('biohazard-watermark').innerHTML = (function(){
+  let rings = '';
+  for (let i = 0; i < 3; i++){
+    rings += '<circle cx="450" cy="330" r="150" fill="none" stroke="#3fae5a" stroke-width="26" transform="rotate(' + (i * 120) + ' 450 450)"/>';
+  }
+  return '<svg viewBox="0 0 900 900" width="900" height="900" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">' +
+    rings + '<circle cx="450" cy="450" r="70" fill="none" stroke="#3fae5a" stroke-width="20"/>' +
+    '<circle cx="450" cy="450" r="330" fill="none" stroke="#3fae5a" stroke-width="8"/>' + '</svg>';
+})();
+
+/* =========================================================
+   4) ПРЕЛОУДЕР — мигающий логотип, строки сканирования, прогресс
+   ========================================================= */
+(function preloader(){
+  const pre = document.getElementById('preloader');
+  const linesEl = document.getElementById('pre-lines');
+  const pctEl = document.getElementById('pre-pct');
+  const barEl = document.getElementById('pre-bar');
+  let finished = false, skip = false;
+
+  const lines = [
+    '> инициализация протокола REQUIEM........ [OK]',
+    '> сканирование носителя................... [OK]',
+    '> проверка биометрии оператора............ [ОТКАЗ]',
+    '> принудительный доступ: УРОВЕНЬ 4........ [РАЗРЕШЁН]',
+    '> дело № RQ-2026-09 «РЕКВИЕМ» найдено',
+    '> внимание: запись содержит кадры насилия'
+  ];
+
+  function finish(){
+    if (finished) return;
+    finished = true;
+    if (REDUCED){
+      pre.style.transition = 'opacity .3s'; pre.style.opacity = '0';
+      setTimeout(() => { pre.style.display = 'none'; }, 320);
+    } else {
+      pre.classList.add('pre-glitch-out');
+      setTimeout(() => { pre.style.display = 'none'; }, 520);
+    }
+    document.body.classList.remove('locked');
+    heroIntro();
+  }
+
+  pre.addEventListener('click', () => { skip = true; });
+
+  // Текст сканирования построчно
+  (async () => {
+    for (const line of lines){
+      if (skip) break;
+      const div = document.createElement('div');
+      div.textContent = line;
+      if (/ОТКАЗ|внимание/i.test(line)) div.style.color = '#d6343e';
+      linesEl.appendChild(div);
+      await new Promise(r => setTimeout(r, REDUCED ? 30 : 260));
+    }
+  })();
+
+  // Прогресс до 100%
+  let pct = 0;
+  const iv = setInterval(() => {
+    pct = Math.min(100, pct + (skip ? 25 : 2 + Math.random() * 6));
+    pctEl.textContent = Math.floor(pct) + '%';
+    barEl.style.width = pct + '%';
+    if (pct >= 100){
+      clearInterval(iv);
+      pctEl.textContent = '100%';
+      const done = document.createElement('div');
+      done.textContent = '> ЗАГРУЗКА ЗАВЕРШЕНА. ОТКРЫТИЕ ДЕЛА...';
+      done.style.color = '#d6343e';
+      linesEl.appendChild(done);
+      setTimeout(finish, REDUCED ? 100 : 620);
+    }
+  }, REDUCED ? 26 : 110);
+  // Страховка: гарантированно закрыть через 8с
+  setTimeout(finish, 8000);
+})();
+
+/* =========================================================
+   5) HERO: вступительная анимация + печать слогана + параллакс
+   ========================================================= */
+function typeText(el, text, speed){
+  return new Promise(res => {
+    if (REDUCED){ el.textContent = text; return res(); }
+    let i = 0;
+    el.textContent = '';
+    const t = setInterval(() => {
+      el.textContent = text.slice(0, ++i);
+      if (i >= text.length){ clearInterval(t); res(); }
+    }, speed || 26);
+  });
+}
+
+// Разбиваем заголовок на буквы для «выплывания из тьмы»
+(function splitHeroTitle(){
+  const h = document.getElementById('hero-title');
+  const txt = h.textContent;
+  h.textContent = '';
+  for (const ch of txt){
+    const s = document.createElement('span');
+    s.className = 'ltr';
+    s.textContent = ch;
+    h.appendChild(s);
+  }
+})();
+
+function heroIntro(){
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  tl.to('#hero-kicker', { opacity: 1, duration: 1.1 }, 0.1)
+    .fromTo('#hero-title .ltr',
+      { opacity: 0, y: 60, filter: 'blur(10px)', rotateX: -50 },
+      { opacity: 1, y: 0, filter: 'blur(0px)', rotateX: 0, duration: 1.1, stagger: 0.055 }, 0.2)
+    .to('#hero-re', { opacity: 1, duration: 1 }, 0.7)
+    .to('#hero-btns', { opacity: 1, y: 0, duration: .9 }, 1.1)
+    .to('#hero-meta', { opacity: 1, duration: 1 }, 1.35);
+  typeText(document.getElementById('hero-tag'), 'Реквием по мёртвым. Кошмар для живых.', 34);
+}
+
+// Многослойный параллакс от мыши
+if (!REDUCED && FINE_POINTER){
+  const hero = document.getElementById('hero');
+  const layers = hero.querySelectorAll('[data-depth]');
+  const qts = [...layers].map(l => ({
+    d: +l.dataset.depth,
+    x: gsap.quickTo(l, 'x', { duration: .9, ease: 'power2.out' }),
+    y: gsap.quickTo(l, 'y', { duration: .9, ease: 'power2.out' })
+  }));
+  hero.addEventListener('mousemove', e => {
+    const nx = e.clientX / innerWidth - .5, ny = e.clientY / innerHeight - .5;
+    qts.forEach(o => { o.x(-nx * o.d * 2.1); o.y(-ny * o.d * 1.4); });
+  });
+}
+// Параллакс при скролле
+if (!REDUCED){
+  gsap.to('#hero-content', {
+    yPercent: -18, opacity: .15, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+  });
+  gsap.to('#hero-bg-img', {
+    yPercent: 14, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+  });
+}
+
+/* =========================================================
+   6) ДОЖДЬ + ПЫЛЬ/ПЕПЕЛ (canvas) и капли на «стекле»
+   ========================================================= */
+(function rain(){
+  if (REDUCED) return;
+  const cv = document.getElementById('rain-canvas');
+  const ctx = cv.getContext('2d');
+  let W, H, drops = [], motes = [], raf;
+  const DPR = Math.min(devicePixelRatio || 1, 1.5);
+
+  function resize(){
+    W = cv.width = innerWidth * DPR; H = cv.height = innerHeight * DPR;
+    cv.style.width = innerWidth + 'px'; cv.style.height = innerHeight + 'px';
+    const n = innerWidth < 768 ? 55 : 130;
+    drops = Array.from({ length: n }, () => newDrop(true));
+    motes = Array.from({ length: innerWidth < 768 ? 18 : 40 }, () => ({
+      x: Math.random() * W, y: Math.random() * H, r: 1 + Math.random() * 2.2,
+      vx: (-.15 + Math.random() * .3) * DPR, vy: (.04 + Math.random() * .12) * DPR, a: .03 + Math.random() * .06
+    }));
+  }
+  function newDrop(any){
+    return { x: Math.random() * W, y: any ? Math.random() * H : -20,
+      len: (10 + Math.random() * 18) * DPR, sp: (9 + Math.random() * 8) * DPR,
+      a: .07 + Math.random() * .1, drift: (1.5 + Math.random()) * DPR };
+  }
+  function step(){
+    ctx.clearRect(0, 0, W, H);
+    if (document.hidden){ raf = requestAnimationFrame(step); return; }
+    // Дождь
+    ctx.lineWidth = 1 * DPR;
+    for (const d of drops){
+      ctx.strokeStyle = 'rgba(178,190,198,' + d.a + ')';
+      ctx.beginPath(); ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x + d.drift * 1.5, d.y + d.len); ctx.stroke();
+      d.y += d.sp; d.x += d.drift * .4;
+      if (d.y > H + 20) Object.assign(d, newDrop(false));
+    }
+    // Пыль/пепел
+    for (const m of motes){
+      ctx.fillStyle = 'rgba(220,220,205,' + m.a + ')';
+      ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 7); ctx.fill();
+      m.x += m.vx; m.y += m.vy;
+      if (m.y > H + 6){ m.y = -6; m.x = Math.random() * W; }
+      if (m.x > W + 6) m.x = -6; if (m.x < -6) m.x = W + 6;
+    }
+    raf = requestAnimationFrame(step);
+  }
+  addEventListener('resize', resize);
+  resize(); step();
+})();
+
+// Капли, стекающие по «стеклу»
+(function glassDrops(){
+  if (REDUCED) return;
+  const wrap = document.getElementById('fx-drops');
+  for (let i = 0; i < 6; i++){
+    const d = document.createElement('div');
+    d.className = 'glass-drop';
+    d.style.left = (6 + Math.random() * 90) + 'vw';
+    d.style.height = (36 + Math.random() * 60) + 'px';
+    d.style.animationDuration = (13 + Math.random() * 16) + 's';
+    d.style.animationDelay = (-Math.random() * 20) + 's';
+    wrap.appendChild(d);
+  }
+})();
+
+/* =========================================================
+   7) КУРСОР-ФОНАРИК + эффект «шёпота»
+   ========================================================= */
+(function cursorAndWhisper(){
+  const flash = document.getElementById('fx-flash');
+  const ring = document.getElementById('cursor-ring');
+  const dot = document.getElementById('cursor-dot');
+  const whisperEl = document.getElementById('whisper-text');
+  const wfx = document.getElementById('fx-whisper');
+  if (!FINE_POINTER){ flash.style.display = 'none'; return; }
+  document.body.classList.add('cursor-on');
+
+  const rx = gsap.quickTo(ring, 'left', { duration: .32, ease: 'power3.out' });
+  const ry = gsap.quickTo(ring, 'top', { duration: .32, ease: 'power3.out' });
+
+  let lx = 0, ly = 0, lt = 0, lastWhisper = 0;
+  const PHRASES = ['она за тобой', 'не оборачивайся', 'ты слышишь?', 'свет. найди свет.', 'onde está...', 'беги'];
+  const INTERACTIVE = 'a,button,.loc-tab,.inv-item,.g-item,[data-tilt]';
+
+  addEventListener('mousemove', e => {
+    flash.style.setProperty('--mx', e.clientX + 'px');
+    flash.style.setProperty('--my', e.clientY + 'px');
+    dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px';
+    rx(e.clientX); ry(e.clientY);
+    ring.classList.toggle('hovering', !!e.target.closest(INTERACTIVE));
+
+    // Шёпот: резкое быстрое движение мыши → помехи + дрожание
+    if (REDUCED) return;
+    const now = performance.now();
+    const v = Math.hypot(e.clientX - lx, e.clientY - ly) / Math.max(now - lt, 1);
+    lx = e.clientX; ly = e.clientY; lt = now;
+    if (v > 1.9 && now - lastWhisper > 7000){
+      lastWhisper = now;
+      whisperEl.textContent = PHRASES[Math.floor(Math.random() * PHRASES.length)];
+      whisperEl.style.left = (e.clientX + 24) + 'px';
+      whisperEl.style.top = (e.clientY - 20) + 'px';
+      gsap.timeline()
+        .to(whisperEl, { opacity: 1, duration: .08 })
+        .to(wfx, { opacity: 1, duration: .06 }, 0)
+        .add(() => { document.body.classList.add('shake'); })
+        .to(whisperEl, { opacity: 0, duration: .7 }, .18)
+        .to(wfx, { opacity: 0, duration: .3 }, .12)
+        .add(() => { document.body.classList.remove('shake'); }, .3);
+    }
+  });
+})();
+
+/* =========================================================
+   8) МИГАЮЩИЙ СВЕТ: случайные перебои электричества
+   ========================================================= */
+(function powerGrid(){
+  if (REDUCED) return;
+  const bo = document.getElementById('fx-blackout');
+  function dip(){
+    const heavy = Math.random() < .3;
+    gsap.timeline()
+      .to(bo, { opacity: heavy ? .5 : .28, duration: .06 })
+      .to(bo, { opacity: 0, duration: .05 })
+      .to(bo, { opacity: heavy ? .4 : .18, duration: .05 })
+      .to(bo, { opacity: 0, duration: .4 });
+    // Иногда «проваливается» случайная секция
+    if (Math.random() < .4){
+      const secs = document.querySelectorAll('main section');
+      const s = secs[Math.floor(Math.random() * secs.length)];
+      s.classList.add('power-dip');
+      setTimeout(() => s.classList.remove('power-dip'), 340);
+    }
+    setTimeout(dip, 7000 + Math.random() * 9000);
+  }
+  setTimeout(dip, 6000);
+})();
+
+/* =========================================================
+   9) НАВИГАЦИЯ: ECG-прогресс, скроллспай, мобильное меню
+   ========================================================= */
+(function nav(){
+  const navEl = document.getElementById('nav');
+  const fill = document.getElementById('ecg-fill');
+  let ticking = false;
+  addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const h = document.documentElement.scrollHeight - innerHeight;
+      fill.style.transform = 'scaleX(' + (h > 0 ? scrollY / h : 0) + ')';
+      navEl.classList.toggle('scrolled', scrollY > 40);
+      ticking = false;
+    });
+  }, { passive: true });
+
+  // Скроллспай
+  document.querySelectorAll('main section[id]').forEach(sec => {
+    ScrollTrigger.create({
+      trigger: sec, start: 'top 55%', end: 'bottom 45%',
+      onToggle: st => {
+        if (!st.isActive) return;
+        document.querySelectorAll('.nav-link').forEach(a =>
+          a.classList.toggle('active', a.getAttribute('href') === '#' + sec.id));
+      }
+    });
+  });
+
+  // Мобильное меню
+  const mm = document.getElementById('mobile-menu');
+  const burger = document.getElementById('burger');
+  burger.addEventListener('click', () => {
+    mm.classList.add('open'); document.body.classList.add('locked');
+    burger.setAttribute('aria-expanded', 'true');
+    gsap.fromTo('#mobile-menu nav a', { opacity: 0, y: 24 }, { opacity: 1, y: 0, stagger: .06, duration: .45, ease: 'power2.out' });
+  });
+  const closeMM = () => {
+    mm.classList.remove('open'); document.body.classList.remove('locked');
+    burger.setAttribute('aria-expanded', 'false');
+  };
+  document.getElementById('burger-close').addEventListener('click', closeMM);
+  mm.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMM));
+})();
+
+/* =========================================================
+   10) АНИМАЦИИ ПОЯВЛЕНИЯ при скролле + кровь на заголовках
+   ========================================================= */
+(function reveals(){
+  // Варианты появления: data-reveal = left|right|zoom|(пусто)
+  document.querySelectorAll('[data-reveal]').forEach(el => {
+    const mode = el.dataset.reveal;
+    if (REDUCED){ return; }
+    const from = { opacity: 0, duration: 1, ease: 'power3.out' };
+    if (mode === 'left') from.x = -70;
+    else if (mode === 'right') from.x = 70;
+    else if (mode === 'zoom'){ from.scale = .92; from.filter = 'brightness(0)'; }
+    else from.y = 48;
+    gsap.from(el, {
+      ...from,
+      scrollTrigger: { trigger: el, start: 'top 86%', once: true },
+      onStart(){ if (mode !== 'zoom') return; gsap.to(el, { filter: 'brightness(1)', duration: 1.4, delay: .25 }); },
+      onComplete(){ el.classList.add('glitch-in'); setTimeout(() => el.classList.remove('glitch-in'), 600); }
+    });
+  });
+
+  // Заголовки секций: подъём + глитч + стекающая кровь
+  document.querySelectorAll('.sec-title').forEach(title => {
+    // SVG с каплями крови
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'blood-svg');
+    svg.setAttribute('viewBox', '0 0 400 70');
+    svg.setAttribute('aria-hidden', 'true');
+    const drips = [];
+    const n = 4 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++){
+      const x = 10 + Math.random() * 380, w = 4 + Math.random() * 6, len = 18 + Math.random() * 46;
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', 'M' + x + ' 0 h' + w + ' v' + len + ' q' + (-w / 2) + ' ' + (w * 1.7) + ' ' + (-w) + ' 0 Z');
+      p.setAttribute('fill', 'url(#bloodGrad)');
+      p.style.transformOrigin = (x + w / 2) + 'px 0px';
+      svg.appendChild(p);
+      drips.push(p);
+    }
+    title.appendChild(svg);
+
+    if (REDUCED) return;
+    gsap.set(drips, { scaleY: 0 });
+    ScrollTrigger.create({
+      trigger: title, start: 'top 84%', once: true,
+      onEnter(){
+        gsap.fromTo(title, { opacity: 0, x: -34, filter: 'blur(6px)' },
+          { opacity: 1, x: 0, filter: 'blur(0px)', duration: .9, ease: 'power3.out' });
+        gsap.to(drips, { scaleY: 1, duration: 1.5, stagger: .14, ease: 'power2.inOut', delay: .3 });
+      }
+    });
+  });
+
+  // Счётчики
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const to = +el.dataset.count;
+    if (REDUCED){ el.textContent = to; return; }
+    const obj = { v: 0 };
+    gsap.to(obj, {
+      v: to, duration: 1.8, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+      onUpdate(){ el.textContent = Math.round(obj.v); }
+    });
+  });
+})();
+
+/* =========================================================
+   11) БЕГУЩАЯ СТРОКА под hero
+   ========================================================= */
+(function ticker(){
+  const items = [
+    'ВНИМАНИЕ: запись помечена как секретная', 'вспышка биологической угрозы — уровень 4',
+    'Вренвуд: серия безответственных смертей', 'проект «ЭЛПИС»: данные изъяты',
+    'отель «Вренвуд» закрыт для посещений', 'Раккун-Сити: зона отчуждения — 28 лет',
+    'Реквием по мёртвым. Кошмар для живых'
+  ];
+  const half = items.map(t => '<span class="flex items-center gap-6 px-6"><span class="text-blood">✕</span>' + t + '</span>').join('');
+  document.getElementById('ticker-track').innerHTML = half + half;
+})();
+
+/* =========================================================
+   12) ДОСЬЕ: печатающийся текст при входе в кадр
+   ========================================================= */
+(function dossier(){
+  const host = document.getElementById('dossier-text');
+  const PARAS = [
+    'Раккун-Сити. Среднезападный город, бывшая штаб-квартира фармацевтического гиганта «Амбрелла». Вспышка 1998 года закончилась решением правительства: стерилизация. Ракетный удар. Об этом быстро «позаботились» замолчать.',
+    'Октябрь 2026-го. В городке Вренвуд, у самых руин, цепочка загадочных смертей. Последняя — в заброшенном отеле на окраине. Аналитик ФБР Грейс Эшкрофт отправляется туда. Одна.',
+    'Тем же следом идёт агент DSO Леон С. Кеннеди — человек, который уже видел этот кошмар изнутри двадцать восемь лет назад.',
+    'Их пути пересекутся там, где эхо «Амбреллы» до сих пор не замолчало. Дальнейшие страницы дела изъяты. <span style="color:#d10f1f">Следующий уровень допуска не существует.</span>'
+  ];
+  let started = false;
+  ScrollTrigger.create({
+    trigger: host, start: 'top 78%', once: true,
+    onEnter(){
+      if (started) return; started = true;
+      if (REDUCED){ host.innerHTML = PARAS.map(p => '<p>' + p + '</p>').join(''); return; }
+      (async () => {
+        for (const p of PARAS){
+          const el = document.createElement('p');
+          host.appendChild(el);
+          // печать посимвольно с сохранением html в конце
+          const plain = p.replace(/<[^>]+>/g, '');
+          await typeText(el, plain, 13);
+          el.innerHTML = p; // подменяем на версию с разметкой
+          await new Promise(r => setTimeout(r, 240));
+        }
+      })();
+    }
+  });
+})();
+
+/* =========================================================
+   13) 3D-НАКЛОН КАРТОЧЕК (data-tilt)
+   ========================================================= */
+if (!REDUCED && FINE_POINTER){
+  document.querySelectorAll('[data-tilt]').forEach(card => {
+    gsap.set(card, { transformPerspective: 900 });
+    const qx = gsap.quickTo(card, 'rotationX', { duration: .5, ease: 'power2.out' });
+    const qy = gsap.quickTo(card, 'rotationY', { duration: .5, ease: 'power2.out' });
+    card.addEventListener('pointermove', e => {
+      const r = card.getBoundingClientRect();
+      const nx = (e.clientX - r.left) / r.width - .5;
+      const ny = (e.clientY - r.top) / r.height - .5;
+      qx(ny * -7); qy(nx * 8);
+    });
+    card.addEventListener('pointerleave', () => { qx(0); qy(0); });
+  });
+}
+
+/* =========================================================
+   14) ЛОКАЦИИ: табы со своим освещением
+   ========================================================= */
+const LOCS = [
+  {
+    key: 'locCity', local: 'loc-city', code: 'CAM 01 // СЕКТОР R-99', tint: 'rgba(90,120,110,.16)',
+    name: 'Руины Раккун-Сити', sub: 'Город, стёртый с лица земли',
+    desc: 'После ракетного удара 1998-го здесь не живут — здесь гниют. Воронка, заваленные улицы, вывеска полицейского участка, едва держащаяся на обгоревшем фасаде. Правительство называет это «зоной отчуждения». Выжившие зовут её домом, который нельзя забыть.',
+    notes: ['Термобарический удар — 1998 г.', 'Статус: зона отчуждения', 'Доступ гражданским: ЗАПРЕЩЁН'],
+    light: 'Освещение: пепел, холодный рассеянный свет, редкие аварийные лампы'
+  },
+  {
+    key: 'locHotel', local: 'loc-hotel', code: 'CAM 02 // НЕ ОТВЕЧАЕТ', tint: 'rgba(199,149,74,.15)',
+    name: 'Отель «Вренвуд»', sub: 'Место последней смерти',
+    desc: 'Заброшенный отель на краю города Вренвуд. Именно здесь произошла последняя смерть в цепочке, которую расследует Грейс. Коридоры пахнут плесенью, облитыми свечами и чем-то ещё, чему у портье не нашлось бы слов. Регистрация — у главного входа. Выезд не гарантирован.',
+    notes: ['Объект закрыт — здание аварийное', 'Последний постоялец: неизвестен', 'Шум в стенах: источник не установлен'],
+    light: 'Освещение: гнилой янтарь бра, сквозняк гасит свечи'
+  },
+  {
+    key: 'locRhodes', local: 'loc-rhodes', code: 'CAM 03 // ЗАПИСЬ СТЁРТА', tint: 'rgba(140,170,150,.18)',
+    name: 'Центр Роудс-Хилл', sub: 'Лечебница хронического ухода',
+    desc: 'Медицинский центр многолетнего ухода, за стенами которого, по материалам дела, проводились эксперименты над людьми. Палаты с ремнями. Каталки, оставленные посреди коридоров, словно их бросили на бегу. Грейс окажется здесь не по своей воле.',
+    notes: ['Лечебница хронического ухода', 'Связь с наследием «Амбреллы»: подтверждена', 'Эксперименты над пациентами: по материалам дела'],
+    light: 'Освещение: мертвенно-зелёные лампы дневного света, стерильная тьма палат'
+  },
+  {
+    key: 'locDark', local: 'loc-dark', code: 'CAM 04 // СИГНАЛ ПОТЕРЯН', tint: 'rgba(150,40,40,.14)',
+    name: 'Мёртвые коридоры', sub: 'Там, где свет — оружие',
+    desc: 'Самые тёмные интерьеры игры. То, что охотится здесь, не терпит света — и знает это. Зажигалка Грейс разгоняет тьму, но выдаёт её с головой: пламя слышно за стенами. Каждый коридор — выбор: видеть или остаться незамеченной.',
+    notes: ['Видимость: критически низкая', 'Преследователь реагирует на свет и звук', 'Рекомендация: двигаться на корточках, прятаться под мебелью'],
+    light: 'Освещение: аварийный красный, дрожащее пламя зажигалки'
+  }
+];
+(function locations(){
+  const tabs = document.querySelectorAll('.loc-tab');
+  const img = document.getElementById('loc-img');
+  const panel = document.getElementById('loc-panel');
+  let current = 0;
+
+  async function show(i){
+    if (i === current) return;
+    current = i;
+    tabs.forEach((t, j) => { t.classList.toggle('active', j === i); t.setAttribute('aria-selected', j === i); });
+    const L = LOCS[i];
+    if (!REDUCED){
+      await gsap.to(img, { opacity: 0, scale: 1.04, duration: .22, ease: 'power1.in' }).then(() => {});
+    }
+    const src = await resolveImage('loc' + i, IMAGES[L.key], L.local, 'ЛОКАЦИЯ // ' + L.name.toUpperCase());
+    img.src = src;
+    img.alt = 'Скриншот локации: ' + L.name;
+    document.getElementById('loc-code').textContent = L.code;
+    document.getElementById('loc-index').textContent = 'Локация 0' + (i + 1) + ' / 04';
+    document.getElementById('loc-name').textContent = L.name;
+    document.getElementById('loc-sub').textContent = L.sub;
+    document.getElementById('loc-desc').textContent = L.desc;
+    document.getElementById('loc-light').textContent = L.light;
+    document.getElementById('loc-notes').innerHTML = L.notes.map(n =>
+      '<div class="file-row" style="border-color:rgba(232,230,223,.1)"><span class="text-[#b9b5aa]">' + n + '</span><span class="text-blood">//</span></div>').join('');
+    panel.style.setProperty('--tint', L.tint);
+    if (!REDUCED){
+      gsap.fromTo(img, { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: .6, ease: 'power2.out' });
+      gsap.fromTo('#loc-panel .lg\\:col-span-5 > *', { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: .5, stagger: .06, ease: 'power2.out' });
+    }
+  }
+  tabs.forEach((t, i) => t.addEventListener('click', () => show(i)));
+  // начальное наполнение текста
+  (function init(){
+    const L = LOCS[0];
+    document.getElementById('loc-img').alt = 'Скриншот локации: ' + L.name;
+    document.getElementById('loc-desc').textContent = L.desc;
+    document.getElementById('loc-light').textContent = L.light;
+    document.getElementById('loc-notes').innerHTML = L.notes.map(n =>
+      '<div class="file-row" style="border-color:rgba(232,230,223,.1)"><span class="text-[#b9b5aa]">' + n + '</span><span class="text-blood">//</span></div>').join('');
+    panel.style.setProperty('--tint', L.tint);
+  })();
+})();
+
+/* =========================================================
+   15) УГРОЗЫ: генерация карточек
+   ========================================================= */
+(function threats(){
+  const DATA = [
+    {
+      key: 'threatZombie', local: 'threat-zombie', cls: 'Класс: вирусная вспышка', code: 'ОБРАЗЕЦ Z-1998',
+      name: 'Заражённые', danger: 3,
+      desc: 'Бывшие люди. Тела разрушены заражением, но голод остался. Двигаются к свету и звуку, собираются группами. В секциях Леона их придётся выкашивать десятками.'
+    },
+    {
+      key: 'threatGirl', local: 'threat-girl', cls: 'Класс: преследователь', code: 'ОБРАЗЕЦ «ДЕВОЧКА»',
+      name: '«Девочка»', danger: 5,
+      desc: 'Идёт за Грейс сквозь стены и перекрытия. Обычный урон её не останавливает. Единственная слабость — свет: выманите её в освещённое место или не дышите в темноте.',
+    },
+    {
+      key: 'threatGideon', local: 'threat-gideon', cls: 'Класс: субъект интереса', code: 'СУБЪЕКТ G-06',
+      name: 'Виктор Гидеон', danger: 4,
+      desc: 'Исследователь, связанный с наследием «Амбреллы» и проектом «Элпис». Куратор экспериментов в центре Роудс-Хилл. Фотоматериалы по делу изъяты.'
+    },
+    {
+      key: 'threatElpis', local: 'threat-elpis', cls: 'Класс: проект', code: 'ПРОЕКТ «ЭЛПИС»',
+      name: 'ДАННЫЕ ЗАСЕКРЕЧЕНЫ', danger: 5, redacted: true,
+      desc: 'Природа проекта не подлежит разглашению. Все материалы переданы в закрытый архив. Повторный запрос будет зафиксирован.'
+    }
+  ];
+  const grid = document.getElementById('threat-grid');
+  grid.innerHTML = DATA.map((d, i) => {
+    const segs = Array.from({ length: 5 }, (_, s) =>
+      '<span class="seg ' + (s < d.danger ? (d.redacted ? 'on g' : 'on') : '') + '"></span>').join('');
+    const desc = d.redacted
+      ? d.desc.split('. ').map(s => '<span class="redacted">' + s + '</span>').join(' ')
+      : d.desc;
+    return '<article class="threat plate overflow-hidden relative" data-tilt data-reveal="zoom" aria-label="Угроза: ' + d.name + '" style="transition-delay:' + (i * 60) + 'ms">' +
+      '<div class="hazard-stripe"></div>' +
+      '<div class="relative h-52 overflow-hidden">' +
+        '<img class="thr-img w-full h-full object-cover" data-img-key="' + d.key + '" data-local="' + d.local + '" data-label="' + (d.redacted ? 'ПРОЕКТ «ЭЛПИС»' : d.name.toUpperCase()) + '" data-sub="ФОТОМАТЕРИАЛЫ ИЗЪЯТЫ" alt="Изображение угрозы: ' + d.name + '" loading="lazy" referrerpolicy="no-referrer">' +
+        '<div class="thr-flicker"></div><div class="scanline"></div>' +
+        '<p class="absolute top-2 left-2 z-[6] font-mono text-[9px] tracking-[0.25em] text-[#e8e6df] uppercase bg-black/60 px-2 py-1">' + d.code + '</p>' +
+      '</div>' +
+      '<div class="p-5">' +
+        '<p class="font-mono text-[9px] tracking-[0.3em] text-herb uppercase">' + d.cls + '</p>' +
+        '<h3 class="font-display font-bold text-xl uppercase tracking-wide mt-2">' + d.name + '</h3>' +
+        '<p class="text-[13px] leading-6 text-[#b9b5aa] mt-3 min-h-[96px]">' + desc + '</p>' +
+        '<div class="flex items-center justify-between mt-4">' +
+          '<div class="flex gap-1" aria-label="Уровень опасности ' + d.danger + ' из 5">' + segs + '</div>' +
+          '<span class="font-mono text-[9px] tracking-[0.2em] text-[#7d7b72] uppercase">' + (d.redacted ? 'уровень: н/д' : 'опасность: ' + d.danger + '/5') + '</span>' +
+        '</div>' +
+      '</div></article>';
+  }).join('');
+  // Повторная привязка tilt к созданным карточкам
+  if (!REDUCED && FINE_POINTER){
+    grid.querySelectorAll('[data-tilt]').forEach(card => {
+      gsap.set(card, { transformPerspective: 800 });
+      const qx = gsap.quickTo(card, 'rotationX', { duration: .45, ease: 'power2.out' });
+      const qy = gsap.quickTo(card, 'rotationY', { duration: .45, ease: 'power2.out' });
+      card.addEventListener('pointermove', e => {
+        const r = card.getBoundingClientRect();
+        qx(((e.clientY - r.top) / r.height - .5) * -9);
+        qy(((e.clientX - r.left) / r.width - .5) * 10);
+      });
+      card.addEventListener('pointerleave', () => { qx(0); qy(0); });
+    });
+    // их собственные reveal-анимации (созданы после основного прохода)
+    grid.querySelectorAll('[data-reveal]').forEach(el => {
+      if (REDUCED) return;
+      gsap.from(el, { opacity: 0, y: 60, scale: .94, duration: .9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 90%', once: true } });
+    });
+  }
+})();
+
+/* =========================================================
+   16) ИНВЕНТАРЬ: сетка, перетаскивание, комбинации трав
+   ========================================================= */
+(function inventory(){
+  // SVG-иконки предметов (рисуются кодом)
+  const IC = {
+    herb: c => '<svg width="40" height="40" viewBox="0 0 48 48" fill="none"><path d="M24 42C24 30 24 20 24 12" stroke="' + c + '" stroke-width="2.6"/><path d="M24 22C17 22 13 17 12 10c7-1 12 3 12 10v2z" fill="' + c + '"/><path d="M24 28c8 1 12-4 13-12-8-1-13 4-13 12z" fill="' + c + '" opacity=".75"/><path d="M24 14c-4-3-5-8-4-12 4 2 6 7 4 12z" fill="' + c + '" opacity=".6"/></svg>',
+    mix: (c1, c2) => '<svg width="40" height="40" viewBox="0 0 48 48" fill="none"><path d="M20 40C20 30 20 22 20 14" stroke="' + c1 + '" stroke-width="2.4"/><path d="M20 24c-6 0-9-4-10-10 6-1 10 3 10 10z" fill="' + c1 + '"/><path d="M29 40c0-10 0-18 0-26" stroke="' + c2 + '" stroke-width="2.4"/><path d="M29 26c6 0 9-4 10-10-6-1-10 3-10 10z" fill="' + c2 + '"/><circle cx="24" cy="42" r="3" fill="#e8e6df" opacity=".5"/></svg>',
+    ammo: '<svg width="40" height="40" viewBox="0 0 48 48" fill="none"><rect x="8" y="22" width="32" height="18" rx="2" fill="#2a2c2e" stroke="#4a4d51"/><rect x="8" y="22" width="32" height="6" fill="#161719"/><g fill="#c9a24b"><rect x="13" y="8" width="4" height="12" rx="2"/><rect x="22" y="8" width="4" height="12" rx="2"/><rect x="31" y="8" width="4" height="12" rx="2"/></g><text x="24" y="36" text-anchor="middle" font-family="monospace" font-size="8" fill="#8a8880">9mm</text></svg>',
+    shells: '<svg width="40" height="40" viewBox="0 0 48 48" fill="none"><g><rect x="12" y="10" width="9" height="26" rx="3" fill="#a31616"/><rect x="12" y="30" width="9" height="7" rx="2" fill="#c9a24b"/></g><g><rect x="27" y="10" width="9" height="26" rx="3" fill="#8f0e14"/><rect x="27" y="30" width="9" height="7" rx="2" fill="#c9a24b"/></g></svg>',
+    spray: '<svg width="40" height="40" viewBox="0 0 48 48" fill="none"><rect x="17" y="14" width="14" height="28" rx="3" fill="#3a3f45" stroke="#5a6067"/><rect x="20" y="7" width="8" height="7" fill="#c9a24b"/><rect x="14" y="4" width="20" height="4" rx="2" fill="#5a6067"/><path d="M24 22v10M19 27h10" stroke="#d10f1f" stroke-width="3.4"/></svg>',
+    key: '<svg width="40" height="40" viewBox="0 0 48 48" fill="none"><circle cx="16" cy="16" r="8" stroke="#c9a24b" stroke-width="3"/><path d="M21 21l15 15M30 30l4-4M34 34l4-4" stroke="#c9a24b" stroke-width="3.2" stroke-linecap="round"/></svg>',
+    ribbon: '<svg width="40" height="40" viewBox="0 0 48 48" fill="none"><circle cx="16" cy="24" r="9" fill="#22262b" stroke="#5a6067" stroke-width="2"/><circle cx="32" cy="24" r="9" fill="#22262b" stroke="#5a6067" stroke-width="2"/><circle cx="16" cy="24" r="3" fill="#d10f1f"/><circle cx="32" cy="24" r="3" fill="#d10f1f"/><path d="M16 15h16" stroke="#5a6067" stroke-width="2"/></svg>'
+  };
+  // Каталог предметов
+  const CAT = {
+    herbG:  { name: 'Зелёная трава', tag: 'G', cat: 'herb', icon: IC.herb('#3fae5a'), desc: 'Лекарственное растение, произрастающее на Среднем Западе. Незначительно восстанавливает здоровье.', hint: 'Комбинируется с другими травами.' },
+    herbR:  { name: 'Красная трава', tag: 'R', cat: 'herb', icon: IC.herb('#d10f1f'), desc: 'Сама по себе не имеет эффекта. Усиливает действие других трав при комбинировании.', hint: 'Попробуйте смешать с зелёной травой.' },
+    herbB:  { name: 'Синяя трава', tag: 'B', cat: 'herb', icon: IC.herb('#3f7fd1'), desc: 'Нейтрализует токсины в организме. Снимает отравление.', hint: 'Комбинируется с зелёной травой.' },
+    ammo9:  { name: 'Патроны 9×19 мм', cat: 'ammo', icon: IC.ammo, desc: 'Пачка пистолетных патронов. Стандартный боеприпас. На вес золота, когда за дверью шаркают.', hint: 'Нельзя комбинировать.' },
+    shells: { name: 'Картечь 12 к.', cat: 'ammo', icon: IC.shells, desc: 'Патроны для дробовика. Убедительный аргумент на короткой дистанции.', hint: 'Нельзя комбинировать.' },
+    spray:  { name: 'Аптечка-спрей', cat: 'heal', icon: IC.spray, desc: 'Средство первой помощи. Полностью восстанавливает здоровье и лечит раны.', hint: 'Редкость. Тратьте с умом.' },
+    key:    { name: 'Старый ключ', cat: 'key', icon: IC.key, desc: 'Потёртый латунный ключ. Гравировка стёрлась, осталась буква «W». Какую дверь он открывает?', hint: 'Ключевой предмет. Не выбрасывать.' },
+    ribbon: { name: 'Чернильная лента', cat: 'save', icon: IC.ribbon, desc: 'Картридж для пишущей машинки. Позволяет сохранить прогресс на классической сложности.', hint: 'Используется в комнате сохранения.' },
+    mixGG:  { name: 'Смесь трав (З+З)', cat: 'heal', icon: IC.mix('#3fae5a', '#2c7a43'), desc: 'Две зелёные травы. Заметно восстанавливает здоровье.', hint: 'Готовая смесь.' },
+    mixGR:  { name: 'Смесь трав (З+К)', cat: 'heal', icon: IC.mix('#3fae5a', '#d10f1f'), desc: 'Усиленная красной травой смесь. Полностью восстанавливает здоровье.', hint: 'Готовая смесь.' },
+    mixGB:  { name: 'Смесь трав (З+С)', cat: 'heal', icon: IC.mix('#3fae5a', '#3f7fd1'), desc: 'Восстанавливает здоровье и выводит токсины.', hint: 'Готовая смесь.' }
+  };
+  const COMBOS = { 'GG': 'mixGG', 'GR': 'mixGR', 'BG': 'mixGB' };
+
+  // Состояние: 8 ячеек
+  let slots = ['herbG', 'herbR', 'herbB', 'ammo9', 'shells', 'spray', 'key', 'ribbon'];
+  let selected = -1, dragIdx = -1, dragMoved = false;
+
+  const grid = document.getElementById('inv-grid');
+  const ghost = document.getElementById('inv-ghost');
+  const logEl = document.getElementById('inv-log');
+
+  function log(msg, red){
+    const d = document.createElement('div');
+    d.textContent = '[СИСТЕМА] ' + msg;
+    if (red) d.style.color = '#d6343e';
+    logEl.prepend(d);
+    while (logEl.children.length > 5) logEl.lastChild.remove();
+    if (!REDUCED) gsap.from(d, { opacity: 0, x: -12, duration: .35 });
+  }
+
+  function itemHTML(key){
+    const it = CAT[key];
+    return '<div class="inv-item" data-key="' + key + '">' + it.icon + '<span class="nm">' + it.name + '</span></div>';
+  }
+
+  function render(){
+    grid.innerHTML = slots.map((k, i) =>
+      '<div class="inv-slot" data-idx="' + i + '" role="button" tabindex="0" aria-label="Ячейка ' + (i + 1) + (k ? ': ' + CAT[k].name : ': пусто') + '">' +
+      (k ? itemHTML(k) : '<span class="absolute top-1 left-1.5 font-mono text-[8px] text-[#33363a]">' + (i + 1) + '</span>') +
+      '</div>').join('');
+    document.getElementById('inv-count').textContent = 'занято: ' + slots.filter(Boolean).length + '/8';
+    if (selected >= 0 && slots[selected]){
+      grid.children[selected].querySelector('.inv-item')?.classList.add('selected');
+    } else selected = -1;
+  }
+
+  function combinePossible(a, b){
+    const A = CAT[slots[a]], B = CAT[slots[b]];
+    if (!A || !B || A.cat !== 'herb' || B.cat !== 'herb') return null;
+    const pair = [A.tag, B.tag].sort().join('');
+    return COMBOS[pair] || null;
+  }
+
+  function moveOrCombine(from, to){
+    if (from === to || !slots[from]) return;
+    const res = combinePossible(from, to);
+    if (res){
+      slots[to] = res; slots[from] = null;
+      log(CAT[res].name + ' — компоненты скомбинированы успешно.');
+    } else if (CAT[slots[to]]?.cat === 'herb' && CAT[slots[from]]?.cat === 'herb'){
+      log('Эффекта нет. Такая комбинация бесполезна.', true);
+      const t = slots[to]; slots[to] = slots[from]; slots[from] = t;
+    } else {
+      const t = slots[to]; slots[to] = slots[from]; slots[from] = t;
+      log(CAT[slots[to]].name + ' — перемещено в ячейку ' + (to + 1) + '.');
+    }
+    render();
+  }
+
+  // Панель осмотра
+  function examine(key){
+    const n = document.getElementById('exam-name');
+    const t = document.getElementById('exam-type');
+    const d = document.getElementById('exam-desc');
+    const h = document.getElementById('exam-hint');
+    const ic = document.getElementById('exam-icon');
+    if (!key || !CAT[key]){
+      n.textContent = '—'; t.textContent = ''; ic.innerHTML = '';
+      d.textContent = 'Наведите курсор на предмет в кейсе, чтобы прочитать описание.';
+      h.textContent = ''; return;
+    }
+    const it = CAT[key];
+    n.textContent = it.name;
+    t.textContent = '// ' + ({ herb: 'растение', ammo: 'боеприпасы', heal: 'лечение', key: 'ключ', save: 'сохранение' })[it.cat];
+    d.textContent = it.desc;
+    h.textContent = it.hint;
+    ic.innerHTML = it.icon;
+    if (!REDUCED) gsap.fromTo(ic.firstChild, { rotate: -8, scale: .85 }, { rotate: 0, scale: 1, duration: .4, ease: 'back.out(2)' });
+  }
+
+  // Наведение → осмотр
+  grid.addEventListener('mouseover', e => {
+    const item = e.target.closest('.inv-item');
+    if (item) examine(item.dataset.key);
+  });
+
+  // Перетаскивание (pointer events) + клик-выделение
+  let startX = 0, startY = 0;
+  grid.addEventListener('pointerdown', e => {
+    const item = e.target.closest('.inv-item');
+    if (!item) return;
+    e.preventDefault();
+    dragIdx = +item.closest('.inv-slot').dataset.idx;
+    dragMoved = false; startX = e.clientX; startY = e.clientY;
+    ghost.innerHTML = CAT[item.dataset.key].icon;
+    const onMove = ev => {
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (!dragMoved && Math.hypot(dx, dy) > 7){
+        dragMoved = true;
+        ghost.style.display = 'flex';
+      }
+      if (dragMoved){
+        ghost.style.left = ev.clientX + 'px';
+        ghost.style.top = ev.clientY + 'px';
+        grid.querySelectorAll('.inv-slot').forEach(s => s.classList.remove('target'));
+        const under = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.inv-slot');
+        if (under && +under.dataset.idx !== dragIdx) under.classList.add('target');
+      }
+    };
+    const onUp = ev => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      ghost.style.display = 'none';
+      grid.querySelectorAll('.inv-slot').forEach(s => s.classList.remove('target'));
+      if (dragMoved){
+        const under = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.inv-slot');
+        if (under) moveOrCombine(dragIdx, +under.dataset.idx);
+      } else {
+        // Клик: выбор предмета / комбинация по клику
+        const idx = +item.closest('.inv-slot').dataset.idx;
+        if (selected === -1){
+          selected = idx; examine(slots[idx]);
+          log(CAT[slots[idx]].name + ' — выбран. Кликните другой предмет для действия.');
+          render();
+        } else if (selected === idx){
+          selected = -1; render();
+        } else {
+          moveOrCombine(selected, idx);
+          selected = -1;
+          examine(slots[idx]);
+        }
+      }
+      dragIdx = -1;
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  });
+
+  // Клавиатурная доступность: Enter на ячейке = клик
+  grid.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const slot = e.target.closest('.inv-slot');
+    if (!slot) return;
+    e.preventDefault();
+    const idx = +slot.dataset.idx;
+    if (!slots[idx] && selected === -1) return;
+    if (selected === -1){ selected = idx; examine(slots[idx]); render(); }
+    else if (selected === idx){ selected = -1; render(); }
+    else { moveOrCombine(selected, idx); selected = -1; }
+  });
+
+  render();
+  log('Кейс открыт. Ресурсов мало — решайте, что жить будет дольше вас.');
+})();
+
+/* =========================================================
+   17) СЕЙФ-РУМ: пишущая машинка + эквалайзер + WebAudio-гул
+   ========================================================= */
+(function saferoom(){
+  // Клавиши машинки
+  const keysHost = document.getElementById('tw-keys');
+  for (let i = 0; i < 40; i++){
+    const k = document.createElement('div');
+    k.className = 'tw-key';
+    keysHost.appendChild(k);
+  }
+  const keys = [...keysHost.children];
+  function pressRandomKey(){
+    const k = keys[Math.floor(Math.random() * keys.length)];
+    k.classList.add('pressed');
+    setTimeout(() => k.classList.remove('pressed'), 110);
+  }
+
+  // Лист: строки сохранения
+  const LINES = [
+    '> проверка носителя.......... [OK]',
+    '> чернильная лента........... [РАСПОЗНАНА]',
+    '> сохранение прогресса....... [ЗАПИСЬ]',
+    '«Судьба Раккун-Сити решилась за одну ночь.',
+    'Моя — тянется уже восемь часов.»',
+    '> запись завершена.',
+    '> вы в безопасности... пока что.'
+  ];
+  const linesHost = document.getElementById('tw-lines');
+  let started = false;
+
+  async function typeAll(){
+    while (true){
+      linesHost.innerHTML = '';
+      for (const line of LINES){
+        const div = document.createElement('div');
+        if (line.startsWith('«') || line.startsWith('Моя')) div.style.color = '#4a4234';
+        if (line.includes('безопасности')) div.style.color = '#7a0c0c';
+        linesHost.appendChild(div);
+        if (REDUCED){ div.textContent = line; continue; }
+        for (let i = 0; i <= line.length; i++){
+          div.textContent = line.slice(0, i);
+          if (i % 3 === 0) pressRandomKey();
+          await new Promise(r => setTimeout(r, 34 + Math.random() * 40));
+        }
+        await new Promise(r => setTimeout(r, 380));
+      }
+      await new Promise(r => setTimeout(r, 6000));
+    }
+  }
+  ScrollTrigger.create({
+    trigger: '#saferoom', start: 'top 70%', once: true,
+    onEnter(){ if (!started){ started = true; typeAll(); } }
+  });
+
+  // Эквалайзер
+  const eq = document.getElementById('eq-bars');
+  for (let i = 0; i < 26; i++){
+    const s = document.createElement('span');
+    s.style.setProperty('--d', (0.5 + Math.random() * 0.9).toFixed(2) + 's');
+    s.style.setProperty('--dl', (-Math.random() * 1.2).toFixed(2) + 's');
+    eq.appendChild(s);
+  }
+
+  // WebAudio: низкий гул «темы безопасной комнаты»
+  let actx = null, master = null, playing = false, nodes = [];
+  const btn = document.getElementById('audio-toggle');
+  const status = document.getElementById('audio-status');
+  const label = document.getElementById('audio-label');
+
+  function buildAudio(){
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    master = actx.createGain(); master.gain.value = 0;
+    const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 720;
+    master.connect(lp); lp.connect(actx.destination);
+    // Тёплый аккорд: A2, E3, C4 — медленное дыхание громкости
+    const voices = [
+      { f: 110, g: .16, t: 'sine' }, { f: 164.8, g: .11, t: 'sine' },
+      { f: 261.6, g: .05, t: 'triangle' }, { f: 55, g: .1, t: 'sine' }
+    ];
+    voices.forEach(v => {
+      const o = actx.createOscillator(); o.type = v.t; o.frequency.value = v.f;
+      o.detune.value = (Math.random() * 8 - 4);
+      const g = actx.createGain(); g.gain.value = v.g;
+      o.connect(g); g.connect(master); o.start();
+      nodes.push(o);
+    });
+    // Шипение «плёнки»
+    const len = actx.sampleRate * 2;
+    const buf = actx.createBuffer(1, len, actx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * .25;
+    const noise = actx.createBufferSource(); noise.buffer = buf; noise.loop = true;
+    const ng = actx.createGain(); ng.gain.value = .012;
+    noise.connect(ng); ng.connect(master); noise.start();
+    nodes.push(noise);
+    // Медленный LFO «дыхание»
+    const lfo = actx.createOscillator(); lfo.frequency.value = .11;
+    const lg = actx.createGain(); lg.gain.value = .03;
+    lfo.connect(lg); lg.connect(master.gain); lfo.start();
+    nodes.push(lfo);
+  }
+
+  btn.addEventListener('click', () => {
+    if (!actx) buildAudio();
+    actx.resume();
+    playing = !playing;
+    master.gain.cancelScheduledValues(actx.currentTime);
+    master.gain.linearRampToValueAtTime(playing ? .5 : 0, actx.currentTime + 1.4);
+    eq.classList.toggle('playing', playing);
+    btn.setAttribute('aria-pressed', playing);
+    status.textContent = playing ? 'воспроизводится' : 'выключено';
+    label.textContent = playing ? 'Остановить фонограмму' : 'Слушать фонограмму';
+  });
+})();
+
+/* =========================================================
+   18) ГАЛЕРЕЯ + ЛАЙТБОКС
+   ========================================================= */
+(function gallery(){
+  const host = document.getElementById('gallery-grid');
+  const resolvedSrcs = new Array(GALLERY.length).fill('');
+  // Создаём элементы, ссылки разрешаются централизованно
+  GALLERY.forEach((g, i) => {
+    const fig = document.createElement('figure');
+    fig.className = 'g-item';
+    fig.setAttribute('tabindex', '0');
+    fig.setAttribute('role', 'button');
+    fig.setAttribute('aria-label', 'Открыть кадр: ' + g.cap);
+    fig.innerHTML = '<img alt="' + g.cap + ' — скриншот Resident Evil Requiem" loading="lazy" referrerpolicy="no-referrer"><figcaption class="g-cap">' + g.cap + '</figcaption>';
+    host.appendChild(fig);
+    resolveImage('gal' + i, g.url, g.local, 'КАДР 0' + (i + 1)).then(src => {
+      resolvedSrcs[i] = src;
+      fig.querySelector('img').src = src;
+    });
+    const open = () => openLB(i);
+    fig.addEventListener('click', open);
+    fig.addEventListener('keydown', e => { if (e.key === 'Enter') open(); });
+    if (!REDUCED){
+      gsap.from(fig, { opacity: 0, y: 40, duration: .8, ease: 'power2.out',
+        scrollTrigger: { trigger: fig, start: 'top 94%', once: true } });
+    }
+  });
+
+  // Лайтбокс
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbCap = document.getElementById('lb-cap');
+  const lbNum = document.getElementById('lb-num');
+  let cur = 0, lastFocus = null;
+
+  function show(i){
+    cur = (i + GALLERY.length) % GALLERY.length;
+    lbImg.src = resolvedSrcs[cur] || '';
+    lbImg.alt = GALLERY[cur].cap;
+    lbCap.textContent = GALLERY[cur].cap;
+    lbNum.textContent = String(cur + 1).padStart(2, '0') + ' / ' + String(GALLERY.length).padStart(2, '0');
+    if (!REDUCED) gsap.fromTo(lbImg, { opacity: 0, scale: .97 }, { opacity: 1, scale: 1, duration: .35 });
+  }
+  function openLB(i){
+    lastFocus = document.activeElement;
+    lb.classList.add('open');
+    document.body.classList.add('modal-open', 'locked');
+    show(i);
+    document.getElementById('lb-close').focus();
+  }
+  function closeLB(){
+    lb.classList.remove('open');
+    document.body.classList.remove('modal-open', 'locked');
+    lastFocus?.focus?.();
+  }
+  document.getElementById('lb-close').addEventListener('click', closeLB);
+  document.getElementById('lb-prev').addEventListener('click', () => show(cur - 1));
+  document.getElementById('lb-next').addEventListener('click', () => show(cur + 1));
+  lb.addEventListener('click', e => { if (e.target === lb) closeLB(); });
+  addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLB();
+    if (e.key === 'ArrowLeft') show(cur - 1);
+    if (e.key === 'ArrowRight') show(cur + 1);
+  });
+})();
+
+/* =========================================================
+   19) ТРЕЙЛЕР: модальное окно с CRT-монитором
+   ========================================================= */
+(function trailer(){
+  const modal = document.getElementById('trailer-modal');
+  const frame = document.getElementById('yt-frame');
+  const camTime = document.getElementById('cam-time');
+  const camLabel = document.getElementById('cam-label');
+  let clock = null, lastFocus = null;
+
+  function open(key){
+    const t = TRAILERS[key] || TRAILERS.main;
+    lastFocus = document.activeElement;
+    frame.src = 'https://www.youtube-nocookie.com/embed/' + t.yt + '?autoplay=1&rel=0&hl=ru';
+    camLabel.textContent = 'CAM 09 // ' + t.label;
+    modal.classList.add('open');
+    document.body.classList.add('modal-open', 'locked');
+    if (!REDUCED) gsap.fromTo('#modal-crt', { scale: .9, opacity: 0 }, { scale: 1, opacity: 1, duration: .45, ease: 'back.out(1.4)' });
+    clock = setInterval(() => {
+      camTime.textContent = new Date().toLocaleTimeString('ru-RU');
+    }, 1000);
+    document.getElementById('tm-close').focus();
+  }
+  function close(){
+    modal.classList.remove('open');
+    frame.src = '';
+    clearInterval(clock);
+    document.body.classList.remove('modal-open', 'locked');
+    lastFocus?.focus?.();
+  }
+  document.querySelectorAll('[data-open-trailer]').forEach(b =>
+    b.addEventListener('click', () => open(b.dataset.openTrailer)));
+  document.getElementById('tm-close').addEventListener('click', close);
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) close();
+  });
+})();
+
+/* =========================================================
+   20) ИНИЦИАЛИЗАЦИЯ ИЗОБРАЖЕНИЙ + мелочи
+   ========================================================= */
+// Загружаем изображения и обновляем расчёты ScrollTrigger (высоты меняются по мере подгрузки)
+initImages().then(() => ScrollTrigger.refresh());
+setTimeout(() => ScrollTrigger.refresh(), 1400);
+setTimeout(() => ScrollTrigger.refresh(), 3000);
+document.getElementById('foot-year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
